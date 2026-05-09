@@ -174,6 +174,7 @@ enum
     // Windows-specific:
     NetworkSystemNotReady, // WSASYSNOTREADY
     WSAVersionNotSupported, // WSAVERNOTSUPPORTED
+    WSAVersionsNotMatch, // responced WinSock version != requested version.
 } typedef SocketError;
 
 struct
@@ -220,7 +221,13 @@ LIBSOCKET_API extern void (*libsocket_free)(void *);
 
 LIBSOCKET_API extern SocketError socket_lasterror;
 
-LIBSOCKET_API const char * LIBSOCKET_ABI socket_strerror(SocketError errcode);
+LIBSOCKET_API const char * LIBSOCKET_ABI socket_strerror(SocketError errcode); // can be accessed without library initialization.
+
+#ifdef LIBSOCKET_MANUAL_INIT
+    LIBSOCKET_API bool LIBSOCKET_ABI socket_isinited(void);
+    LIBSOCKET_API bool LIBSOCKET_ABI socket_startup(void);
+    LIBSOCKET_API bool LIBSOCKET_ABI socket_cleanup(void);
+#endif
 
 LIBSOCKET_API bool LIBSOCKET_ABI socket_parseaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr);
 LIBSOCKET_API bool LIBSOCKET_ABI socket_addrtostr(const IPAddressInterface *addr, SocketAddressFamily af, char *straddr, socklen_t size);

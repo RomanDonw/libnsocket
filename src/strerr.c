@@ -123,6 +123,9 @@ const char *socket_strerror(SocketError errcode)
         case WSAVersionNotSupported:
             return "WinSock version not supported";
 
+        case WSAVersionsNotMatch:
+            return "responced WinSock version doesn't match requested version";
+
         default:
             return NULL;
     }

@@ -1,8 +1,11 @@
 #ifndef INIT_H
 #define INIT_H
 
-extern volatile void *___;
+#include <stdbool.h>
 
-#define ENSURE_INIT (___ = (void *)0)
+extern volatile bool inited;
+
+#define ENSURE_INIT
+//#define ENSURE_INIT(return_value) { if (!inited) return return_value; }
 
 #endif
