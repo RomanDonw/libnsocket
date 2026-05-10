@@ -6,21 +6,15 @@
 
 #include "err.h"
 
-#ifdef LIBSOCKET_MANUAL_INIT
-    #define LIBSOCKET_HIDDEN_INITFUNCS
-#else
-    #define LIBSOCKET_HIDDEN_INITFUNCS static
-#endif
-
 void *(*libsocket_malloc)(size_t) = malloc;
 void *(*libsocket_realloc)(void *, size_t) = realloc;
 void (*libsocket_free)(void *) = free;
 
 volatile bool inited = false;
 
-LIBSOCKET_HIDDEN_INITFUNCS bool socket_isinited(void) { return inited; }
+bool socket_isinited(void) { return inited; }
 
-LIBSOCKET_HIDDEN_INITFUNCS bool socket_startup(void)
+bool socket_startup(void)
 {
     if (inited) RETURNWITHERROR(AlreadyInitialized, false);
 
@@ -38,7 +32,7 @@ LIBSOCKET_HIDDEN_INITFUNCS bool socket_startup(void)
     RETURNWITHSUCCESS(true);
 }
 
-LIBSOCKET_HIDDEN_INITFUNCS bool socket_cleanup(void)
+bool socket_cleanup(void)
 {
     if (!inited) RETURNWITHERROR(NotInitialized, false);
 
@@ -63,30 +57,6 @@ LIBSOCKET_HIDDEN_INITFUNCS bool socket_cleanup(void)
     static void LIBSOCKET_STUPATTR libsocket_autostartup(void)
     {
         if (inited) return;
-
-        /*
-        #ifdef LIBSOCKET_OS_WINDOWS
-            const WORD version = MAKEWORD(LIBSOCKET_WINSOCK_VERSION_LOW, LIBSOCKET_WINSOCK_VERSION_HIGH);
-
-            WSADATA data;
-            int err = WSAStartup(version, &data);
-            if (err)
-            {
-                fprintf(stderr, "[libsocket]: WSAStartup error %i. Application aborted.\n", err);
-                abort();
-            }
-
-            if (data.wVersion != version)
-            {
-                fprintf(stderr, "[libsocket]: responced WinSock version (high.low: %u.%u) doesn't match requested version (high.low: %u.%u). Application aborted.\n", HIBYTE(data.wVersion), LOBYTE(data.wVersion), HIBYTE(version), LOBYTE(version));
-
-                WSACleanup();
-                abort();
-            }
-        #endif
-
-        inited = true;
-        */
 
         if (!socket_startup())
         {
