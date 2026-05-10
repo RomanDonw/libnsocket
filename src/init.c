@@ -12,7 +12,7 @@ void (*libsocket_free)(void *) = free;
 
 bool inited = false;
 
-bool socket_isinited(void) { return inited; }
+bool socket_initialized(void) { return inited; }
 
 bool socket_startup(void)
 {

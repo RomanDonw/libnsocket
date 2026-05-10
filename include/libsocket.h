@@ -223,7 +223,7 @@ LIBSOCKET_API extern SocketError socket_lasterror; // can be accessed without li
 
 LIBSOCKET_API const char * LIBSOCKET_ABI socket_strerror(SocketError errcode); // can be accessed without library initialization.
 
-LIBSOCKET_API bool LIBSOCKET_ABI socket_isinited(void);
+LIBSOCKET_API bool LIBSOCKET_ABI socket_initialized(void);
 LIBSOCKET_API bool LIBSOCKET_ABI socket_startup(void);
 LIBSOCKET_API bool LIBSOCKET_ABI socket_cleanup(void);
 
