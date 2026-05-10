@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.23)
 
 # ========== SETTINGS ==========
-set(PROJ_VERSION 1.0)
+project(socket VERSION 1.0)
+
 set(VERSION_CHECK_METHOD SameMajorVersion)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
@@ -9,8 +10,6 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 # ========== ======== ==========
-
-project(socket VERSION ${PROJ_VERSION})
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -22,35 +21,27 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.h" "src/*.c")
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
-add_library(socket ${SOURCES})
+add_library(${PROJECT_NAME} ${SOURCES})
 
-target_compile_definitions(socket 
+target_compile_definitions(${PROJECT_NAME}
     PRIVATE $<$<BOOL:${BUILD_SHARED_LIBS}>:LIBSOCKET_EXPORT>
     PUBLIC $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:LIBSOCKET_STATIC>
 )
 
-message("============================================")
-if(BUILD_SHARED_LIBS)
-    message("Building dynamic version of libsocket.")
-else()
-    message("Building static version of libsocket.")
-endif()
-message("============================================")
-
 # setup includes & required libs
 
-target_include_directories(socket PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
 if(WIN32)
-    target_link_libraries(socket PUBLIC "ws2_32")
+    target_link_libraries(${PROJECT_NAME} PUBLIC "ws2_32")
 endif()
 
 # setup correct installation process
 
-install(TARGETS socket
+install(TARGETS ${PROJECT_NAME}
     EXPORT libsocketTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
