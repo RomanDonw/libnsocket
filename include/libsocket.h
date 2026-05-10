@@ -37,8 +37,6 @@
         #endif
     #endif
 
-    #define LIBSOCKET_ABI __cdecl
-
     #define LIBSOCKET_WINSOCK_VERSION_HIGH 2
     #define LIBSOCKET_WINSOCK_VERSION_LOW 2
 
@@ -72,6 +70,12 @@
         Both = SHUT_RDWR
     } typedef SocketShutdownMode;
 
+#endif
+
+#ifdef _MSC_VER
+    #define LIBSOCKET_ABI __cdecl
+#else
+    #define LIBSOCKET_ABI __attribute__((cdecl))
 #endif
 
 #define SOCKET_HTONS(x) (((uint16_t)(x) & 0xFF00) >> 8) | (((uint16_t)(x) & 0x00FF) << 8)
