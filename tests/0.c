@@ -23,6 +23,8 @@ void setsocksendbuffsize(const Socket *s, int size)
 
 int main(void)
 {
+    if (!socket_startup(NULL)) handleerror("socket_startup");
+
     Socket *s = socket_open(IPv4, Stream, TCP);
     if (!s) handleerror("socket_open");
 
@@ -54,6 +56,8 @@ int main(void)
     }
 
     if (!socket_close(s)) handleerror("socket_close");
+
+    if (!socket_cleanup()) handleerror("socket_cleanup");
 
     return 0;
 }

@@ -14,6 +14,8 @@ void printipv4(IPv4Address addr, const char *addrname)
 
 int main(void)
 {
+    if (!socket_startup(NULL)) handleerror("socket_startup");
+
     Socket *s = socket_open(IPv4, Stream, TCP);
     if (!s) handleerror("socket_open");
     puts(" === === [socket opened] === ===\n");
@@ -91,6 +93,8 @@ int main(void)
         printipv4(IPV4ADDR_BROADCAST, "IPv4 broadcast");
         printipv4(addr, "Custom (must be 123.213.45.67)");
     }
+
+    if (!socket_cleanup()) handleerror("socket_cleanup");
 
     return 0;
 }
