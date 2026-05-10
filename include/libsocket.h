@@ -71,11 +71,7 @@
 
 #endif
 
-#ifdef _MSC_VER
-    #define LIBSOCKET_ABI __cdecl
-#else
-    #define LIBSOCKET_ABI __attribute__((cdecl))
-#endif
+#define LIBSOCKET_ABI
 
 #define SOCKET_HTONS(x) (((uint16_t)(x) & 0xFF00) >> 8) | (((uint16_t)(x) & 0x00FF) << 8)
 #define SOCKET_HTONL(x) ((((uint32_t)(x) & 0xFF000000) >> 24) | (((uint32_t)(x) & 0x000000FF) << 24) | (((uint32_t)(x) & 0x00FF0000) >> 8) | (((uint32_t)(x) & 0x0000FF00) << 8))
@@ -186,6 +182,11 @@ struct
     unsigned short linger; // in seconds.
 } typedef SocketLingerOptions;
 
+struct
+{
+    unsigned short winsock_version;
+} typedef SocketStartupOptions;
+
 #define SOCKET_RECV_NOFLAGS 0
 #define SOCKET_RECV_FLAG_PEEK MSG_PEEK
 #define SOCKET_RECV_FLAG_WAITALL MSG_WAITALL
@@ -225,11 +226,6 @@ LIBSOCKET_API extern void (*libsocket_free)(void *);
 LIBSOCKET_API extern SocketError socket_lasterror; // can be accessed without library initialization.
 
 LIBSOCKET_API const char * LIBSOCKET_ABI socket_strerror(SocketError errcode); // can be accessed without library initialization.
-
-struct
-{
-    unsigned short winsock_version;
-} typedef SocketStartupOptions;
 
 LIBSOCKET_API bool LIBSOCKET_ABI socket_initialized(void);
 LIBSOCKET_API bool LIBSOCKET_ABI socket_startup(const SocketStartupOptions *options); // options can be NULL.
