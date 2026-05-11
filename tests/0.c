@@ -48,7 +48,7 @@ int main(void)
 
     //const size_t BUFFER_SIZE = 512;
     #define BUFFER_SIZE 512
-    char buffer[BUFFER_SIZE];;
+    char buffer[BUFFER_SIZE];
     ssize_t readbytes;
     while ((readbytes = socket_recv(s, buffer, BUFFER_SIZE, SOCKET_RECV_NOFLAGS)) > 0)
     {
