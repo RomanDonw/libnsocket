@@ -30,26 +30,25 @@ sockslisterr_t sockslist_add(Socket *socket)
 
 sockslisterr_t sockslist_remove(Socket *socket)
 {
-    if (!sockslist_has(socket)) return SOCKSLISTERR_ITEMNOTEXIST;
+    bool found = false;
+    size_t pos;
+    for (pos = 0; pos < sockets_count; pos++) if (sockets[pos] == socket) { found = true; break; }
+    if (!found) return SOCKSLISTERR_ITEMNOTEXIST;
 
-    Socket **new_sockets = NULL;
-    size_t new_sockets_count = 0;
+    sockets[pos] = sockets[sockets_count - 1];
+    sockets_count--;
 
-    for (size_t i = 0; i < sockets_count; i++)
+    if (sockets_count > 0)
     {
-        if (sockets[i] == socket) continue;
-
-        {
-            Socket **new_new_sockets = (Socket **)libsocket_realloc(new_sockets, sizeof(Socket *) * (new_sockets_count + 1));
-            if (!new_new_sockets) { if (new_sockets) libsocket_free(new_sockets); return SOCKSLISTERR_NOMEM; }
-            new_sockets = new_new_sockets;
-        }
-
-        new_sockets[new_sockets_count++] = sockets[i];
+        Socket **new_sockets = (Socket **)libsocket_realloc(sockets, sizeof(Socket *) * sockets_count));
+        if (new_sockets) sockets = new_sockets;
+    }
+    else
+    {
+        libsocket_free(sockets);
+        sockets = NULL;
     }
 
-    sockets = new_sockets;
-    sockets_count = new_sockets_count;
     return SOCKSLISTERR_SUCCESS;
 }
 
