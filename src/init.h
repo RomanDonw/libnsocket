@@ -5,7 +5,7 @@
 
 #include "err.h"
 
-extern bool inited;
+extern bool inited; // !!! readonly !!!
 
 #define ENSURE_INIT(return_value_on_error) { if (!inited) RETURNWITHERROR(NotInitialized, return_value_on_error); }
 

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "err.h"
+#include "sockslist.h"
 
 void *(*libsocket_malloc)(size_t) = malloc;
 void *(*libsocket_realloc)(void *, size_t) = realloc;
@@ -44,6 +45,8 @@ bool socket_cleanup(void)
     #ifdef LIBSOCKET_OS_WINDOWS
         if (WSACleanup()) RETURNWITHSYSERR(false);
     #endif
+    
+    sockslist_removeall();
 
     inited = false;
     RETURNWITHSUCCESS(true);

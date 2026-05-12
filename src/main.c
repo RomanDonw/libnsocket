@@ -8,6 +8,7 @@
 #include "init.h"
 #include "err.h"
 #include "util.h"
+#include "sockslist.h"
 
 #ifndef LIBSOCKET_OS_WINDOWS
     #include <unistd.h>
@@ -33,6 +34,12 @@ struct Socket
     SocketProtocol protocol;
 };
 
+#ifdef LIBSOCKET_OS_WINDOWS
+    #define CLOSESOCKET(descr) closesocket(descr)
+#else
+    #define CLOSESOCKET(descr) close(descr)
+#endif
+
 Socket *socket_open(SocketAddressFamily af, SocketType type, SocketProtocol protocol)
 {
     ENSURE_INIT(NULL);
@@ -47,6 +54,22 @@ Socket *socket_open(SocketAddressFamily af, SocketType type, SocketProtocol prot
     ret->protocol = protocol;
     ret->desc = desc;
 
+    sockslisterr_t err = sockslist_add(ret);
+    if (err != SOCKSLISTERR_SUCCESS)
+    {
+        CLOSESOCKET(desc);
+        libsocket_free(ret);
+
+        switch (err)
+        {
+            case SOCKSLISTERR_NOMEM:
+                RETURNWITHERROR(MemoryAllocationFailed, NULL);
+
+            default:
+                RETURNWITHERROR(Fault, NULL);
+        }
+    }
+
     RETURNWITHSUCCESS(ret);
 }
 
@@ -54,12 +77,23 @@ bool socket_close(Socket *socket)
 {
     ENSURE_INIT(false);
 
-    #ifdef LIBSOCKET_OS_WINDOWS
-        if (closesocket(socket->desc))
-    #else
-        if (close(socket->desc))
-    #endif
-    RETURNWITHSYSERR(false);
+    sockslisterr_t err = sockslist_remove(socket);
+    if (err != SOCKSLISTERR_SUCCESS)
+    {
+        switch (err)
+        {
+            case SOCKSLISTERR_NOMEM:
+                RETURNWITHERROR(MemoryAllocationFailed, false);
+
+            default:
+                RETURNWITHERROR(Fault, false);
+        }
+    }
+
+    //if (CLOSESOCKET(socket->desc)) RETURNWITHSYSERR(false);
+
+    // this necessary because we can't handle all nested errors.
+    if (CLOSESOCKET(socket->desc)) abort();
 
     libsocket_free(socket);
     RETURNWITHSUCCESS(true);
@@ -99,6 +133,22 @@ Socket *socket_accept(const Socket *socket, SocketAddressInterface *sockaddr, so
     ret->type = socket->type;
     ret->protocol = socket->protocol;
     ret->desc = desc;
+
+    sockslisterr_t err = sockslist_add(ret);
+    if (err != SOCKSLISTERR_SUCCESS)
+    {
+        CLOSESOCKET(desc);
+        libsocket_free(ret);
+
+        switch (err)
+        {
+            case SOCKSLISTERR_NOMEM:
+                RETURNWITHERROR(MemoryAllocationFailed, NULL);
+
+            default:
+                RETURNWITHERROR(Fault, NULL);
+        }
+    }
 
     RETURNWITHSUCCESS(ret);
 }
