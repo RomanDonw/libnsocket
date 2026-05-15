@@ -169,6 +169,9 @@ enum
     DestinationAddressRequired, // EDESTADDRREQ
     NameTooLong, // ENAMETOOLONG
     TooManyProcesses, // EPROCLIM
+    DNSTemporaryError, // EAI_AGAIN
+    DNSHostNotFound, // EAI_NONAME
+    DNSUnsupportedServiceName, // EAI_SERVICE
 
     // Windows-specific:
     NetworkSystemNotReady, // WSASYSNOTREADY
