@@ -81,6 +81,7 @@
 
 enum SocketAddressFamily
 {
+    UnspecifiedAddressFamily = AF_UNSPEC,
     IPv4 = AF_INET,
     IPv6 = AF_INET6
 } typedef SocketAddressFamily;
