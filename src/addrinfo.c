@@ -3,10 +3,6 @@
 #include <string.h>
 #include <stddef.h>
 
-#ifndef LIBSOCKET_OS_WINDOWS
-    #include <netdb.h>
-#endif
-
 #ifdef LIBSOCKET_DEBUG
     #include <stdio.h>
 #endif

@@ -84,7 +84,7 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
             static char addrstr[1024];
             if (!socket_addrtostr(ipaddr, currresp->af, addrstr, sizeof(addrstr))) handlesockerror("socket_addrtostr");
 
-            printf(" -  Address: %s.\n -  Port: %u.\n", addrstr, port);
+            printf(" -  Address: [%s]:%u\n", addrstr, port);
         }
         else puts(" -  Address: (unspecified).");
 
@@ -101,4 +101,14 @@ void test(void)
     printdnsinfo("google.com", NULL, NULL);
     printdnsinfo("wikipedia.org", "80", NULL);
     printdnsinfo("kernel.org", "http", NULL);
+
+    SocketDNSRequest req =
+    {
+        .flags = AI_CANONNAME,
+        .af = IPv4,
+        .type = Stream,
+        .protocol = TCP
+    };
+
+    printdnsinfo("github.com", "http", &req);
 }
