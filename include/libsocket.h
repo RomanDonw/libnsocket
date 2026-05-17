@@ -239,7 +239,7 @@ LIBSOCKET_API extern const IPv6Address IPV6ADDR_ANY;
 LIBSOCKET_API extern const IPv6Address IPV6ADDR_LOOPBACK;
 
 #define LIBSOCKET_SOCKETDNSBASE \
-    int flags;\
+    int flags; /* see <netdb.h> getaddrinfo function flags documentation for more info. */\
     SocketAddressFamily af;\
     SocketType type;\
     SocketProtocol protocol;
@@ -267,7 +267,6 @@ LIBSOCKET_API extern void *(*libsocket_realloc)(void *, size_t);
 LIBSOCKET_API extern void (*libsocket_free)(void *);
 
 LIBSOCKET_API extern SocketError socket_lasterror; // can be accessed without library initialization.
-
 LIBSOCKET_API const char * LIBSOCKET_ABI socket_strerror(SocketError errcode); // can be accessed without library initialization.
 
 LIBSOCKET_API bool LIBSOCKET_ABI socket_initialized(void); // can be accessed without library initialization.
@@ -281,8 +280,8 @@ LIBSOCKET_API SocketAddressFamily LIBSOCKET_ABI socket_getsockaddraf(const Socke
 LIBSOCKET_API bool LIBSOCKET_ABI socket_packsockaddr(SocketAddressInterface *sockaddr, SocketAddressFamily af, const IPAddressInterface *addr, unsigned short port);
 LIBSOCKET_API bool LIBSOCKET_ABI socket_unpacksockaddr(const SocketAddressInterface *sockaddr, SocketAddressFamily af, IPAddressInterface *addr, unsigned short *port);
 
-// [socket_getaddrinfo]: request can be NULL.
-LIBSOCKET_API bool LIBSOCKET_ABI socket_getaddrinfo(const char *node, const char *service, const SocketDNSRequest *request, SocketDNSResponse **response);
+// [socket_getaddrinfo]: request can be NULL, and node OR service also can be NULL, but not both. see <netdb.h> getaddrinfo function documentation for more info.
+LIBSOCKET_API bool LIBSOCKET_ABI socket_getaddrinfo(const char *nodename, const char *servicename, const SocketDNSRequest *request, SocketDNSResponse **response);
 LIBSOCKET_API void LIBSOCKET_ABI socket_freeaddrinfo(SocketDNSResponse *response);
 
 LIBSOCKET_API Socket * LIBSOCKET_ABI socket_open(SocketAddressFamily af, SocketType type, SocketProtocol protocol);

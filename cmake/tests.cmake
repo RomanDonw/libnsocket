@@ -6,3 +6,4 @@ endmacro()
 
 test(test0 "tests/0.c")
 test(test1 "tests/1.c")
+test(test2 "tests/2.c")

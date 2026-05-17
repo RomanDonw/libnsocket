@@ -5,3 +5,6 @@ Here is available simple HTTP 1.0 GET request to local server. I recommends to u
 
 ## Test 1
 Test 1 contains tests of very many libsocket`s API functions, such as IP parse/stringify functions, packing/unpacking SocketAddress struct and more other.
+
+## Test 2
+`socket_getaddrinfo` and `socket_getnameinfo` test.

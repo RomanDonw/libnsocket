@@ -13,7 +13,7 @@
 
 #include "err.h"
 
-bool socket_getaddrinfo(const char *node, const char *service, const SocketDNSRequest *request, SocketDNSResponse **response)
+bool socket_getaddrinfo(const char *nodename, const char *servicename, const SocketDNSRequest *request, SocketDNSResponse **response)
 {
     struct addrinfo *hints = NULL;
     struct addrinfo _hints = {0};
@@ -29,7 +29,7 @@ bool socket_getaddrinfo(const char *node, const char *service, const SocketDNSRe
 
     struct addrinfo *result;
     {
-        int err = getaddrinfo(node, service, hints, &result);
+        int err = getaddrinfo(nodename, servicename, hints, &result);
         switch (err)
         {
             case 0: // success.
@@ -145,7 +145,7 @@ bool socket_getaddrinfo(const char *node, const char *service, const SocketDNSRe
 
     freeaddrinfo(result);
     *response = firstresp;
-    return true;
+    RETURNWITHSUCCESS(true);
 }
 
 void socket_freeaddrinfo(SocketDNSResponse *response)
