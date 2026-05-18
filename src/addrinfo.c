@@ -161,6 +161,7 @@ bool socket_freeaddrinfo(SocketDNSResponse *response)
 bool socket_getnameinfo(const SocketAddressInterface *sockaddr, socklen_t sockaddrlen, char *nodename, uint32_t nodenamesize, char *servicename, uint32_t servicenamesize, int flags)
 {
     ENSURE_INIT(false);
-
+    SocketError err = translateeaierror(getnameinfo(sockaddr, sockaddrlen, nodename, nodenamesize, servicename, servicenamesize, flags));
+    if (err) RETURNWITHERROR(err, false);
     RETURNWITHSUCCESS(true);
 }
