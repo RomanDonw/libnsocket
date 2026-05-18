@@ -72,8 +72,8 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
                 puts("(unknown/unsupported).");
         }
 
-        if (currresp->canonname) printf(" -  Cannonical name: \"%s\".\n", currresp->canonname);
-        else puts(" -  Cannonical name: (unspecified).");
+        if (currresp->canonname) printf(" -  Canonical name: \"%s\".\n", currresp->canonname);
+        else puts(" -  Canonical name: (unspecified).");
 
         if (currresp->sockaddr && currresp->sockaddrlen)
         {

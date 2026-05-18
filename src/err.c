@@ -11,6 +11,9 @@ SocketError translateerror(int err)
 {
     switch (err)
     {
+        case 0:
+            return Success;
+
         case SOCKERR_NOMEM:
             return MemoryAllocationFailed;
 

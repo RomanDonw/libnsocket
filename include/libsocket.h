@@ -277,13 +277,17 @@ LIBSOCKET_API bool LIBSOCKET_ABI socket_cleanup(void);
 LIBSOCKET_API bool LIBSOCKET_ABI socket_parseaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr);
 LIBSOCKET_API bool LIBSOCKET_ABI socket_addrtostr(const IPAddressInterface *addr, SocketAddressFamily af, char *straddr, socklen_t size);
 
+// [socket_getsockaddraf]: can be accessed without library initialization.
 LIBSOCKET_API SocketAddressFamily LIBSOCKET_ABI socket_getsockaddraf(const SocketAddressInterface *sockaddr);
+// [socket_packsockaddr]: can be accessed without library initialization.
 LIBSOCKET_API bool LIBSOCKET_ABI socket_packsockaddr(SocketAddressInterface *sockaddr, SocketAddressFamily af, const IPAddressInterface *addr, unsigned short port);
+// [socket_unpacksockaddr]: can be accessed without library initialization.
 LIBSOCKET_API bool LIBSOCKET_ABI socket_unpacksockaddr(const SocketAddressInterface *sockaddr, SocketAddressFamily af, IPAddressInterface *addr, unsigned short *port);
 
 // [socket_getaddrinfo]: request can be NULL, and node OR service also can be NULL, but not both. see <netdb.h> getaddrinfo function documentation for more info.
 LIBSOCKET_API bool LIBSOCKET_ABI socket_getaddrinfo(const char *nodename, const char *servicename, const SocketDNSRequest *request, SocketDNSResponse **response);
-LIBSOCKET_API void LIBSOCKET_ABI socket_freeaddrinfo(SocketDNSResponse *response);
+LIBSOCKET_API bool LIBSOCKET_ABI socket_freeaddrinfo(SocketDNSResponse *response);
+LIBSOCKET_API bool LIBSOCKET_ABI socket_getnameinfo(const SocketAddressInterface *sockaddr, socklen_t sockaddrlen, char *nodename, uint32_t nodenamesize, char *servicename, uint32_t servicenamesize, int flags);
 
 LIBSOCKET_API Socket * LIBSOCKET_ABI socket_open(SocketAddressFamily af, SocketType type, SocketProtocol protocol);
 LIBSOCKET_API bool LIBSOCKET_ABI socket_close(Socket *socket);
@@ -315,7 +319,7 @@ LIBSOCKET_API bool LIBSOCKET_ABI socket_getpeername(const Socket *socket, Socket
 LIBSOCKET_API bool LIBSOCKET_ABI socket_getsockname(const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *size);
 
 #if defined(LIBSOCKET_ALLOWUNSAFEACCESS) || defined(LIBSOCKET_EXPORT)
-    LIBSOCKET_API SOCKETDESCRIPTOR LIBSOCKET_ABI socket_gethandle(const Socket *socket);
+    LIBSOCKET_API SOCKETDESCRIPTOR LIBSOCKET_ABI socket_gethandle(const Socket *socket); // can be accessed without library initialization.
 #endif
 
 #ifdef __cplusplus

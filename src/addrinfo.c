@@ -7,10 +7,67 @@
     #include <stdio.h>
 #endif
 
+#include "init.h"
 #include "err.h"
+
+SocketError translateeaierror(int err)
+{
+    switch (err)
+    {
+        case 0:
+            return Success;
+
+        case EAI_AGAIN:
+            return DNSTemporaryError;
+
+        case EAI_NONAME:
+            return DNSHostNotFound;
+
+        case EAI_SERVICE:
+            return DNSUnsupportedServiceName;
+
+        case EAI_SOCKTYPE:
+            return UnsupportedSocketType;
+
+        case EAI_MEMORY:
+            return MemoryAllocationFailed;
+
+        case EAI_FAMILY:
+            return UnsupportedAddressFamily;
+
+        case EAI_FAIL:
+            return DNSFailure;
+
+        case EAI_BADFLAGS:
+            return IncorrectArgumentValue;
+
+        #ifdef EAI_OVERFLOW
+            case EAI_OVERFLOW:
+                return InsufficientBufferSize;
+        #endif
+
+        #ifdef EAI_SYSTEM
+            case EAI_SYSTEM:
+        #endif
+        default:
+            return translateerror(err);
+            /*
+            #ifdef LIBSOCKET_OS_WINDOWS
+                ret.err = translateerror(err);
+            #else
+                #ifdef LIBSOCKET_DEBUG
+                    fprintf(stderr, "Got unhandled error: %i.\n", err);
+                #endif
+                ret.err = InternalUnknownError;
+            #endif
+            */
+    }
+}
 
 bool socket_getaddrinfo(const char *nodename, const char *servicename, const SocketDNSRequest *request, SocketDNSResponse **response)
 {
+    ENSURE_INIT(false);
+    
     struct addrinfo *hints = NULL;
     struct addrinfo _hints = {0};
     if (request)
@@ -25,66 +82,14 @@ bool socket_getaddrinfo(const char *nodename, const char *servicename, const Soc
 
     struct addrinfo *result;
     {
-        int err = getaddrinfo(nodename, servicename, hints, &result);
-        switch (err)
-        {
-            case 0: // success.
-                break;
-
-            case EAI_AGAIN:
-                RETURNWITHERROR(DNSTemporaryError, false);
-
-            case EAI_NONAME:
-                RETURNWITHERROR(DNSHostNotFound, false);
-
-            case EAI_SERVICE:
-                RETURNWITHERROR(DNSUnsupportedServiceName, false);
-
-            case EAI_SOCKTYPE:
-                RETURNWITHERROR(UnsupportedSocketType, false);
-
-            case EAI_MEMORY:
-                RETURNWITHERROR(MemoryAllocationFailed, false);
-
-            case EAI_FAMILY:
-                RETURNWITHERROR(UnsupportedAddressFamily, false);
-
-            case EAI_FAIL:
-                RETURNWITHERROR(DNSFailure, false);
-
-            case EAI_BADFLAGS:
-                RETURNWITHERROR(IncorrectArgumentValue, false);
-
-            #ifdef EAI_OVERFLOW
-                case EAI_OVERFLOW:
-                    RETURNWITHERROR(InsufficientBufferSize, false);
-            #endif
-
-            #ifdef EAI_SYSTEM
-                case EAI_SYSTEM:
-                    RETURNWITHSYSERR(false);
-            #endif
-
-            default:
-                #ifdef LIBSOCKET_OS_WINDOWS
-                    SocketError serr = translateerror(err);
-                    #ifdef LIBSOCKET_DEBUG
-                        if (serr == InternalUnknownError) fprintf(stderr, "Got unhandled getaddrinfo error: %i.\n", err);
-                    #endif
-                    RETURNWITHERROR(serr, false);
-                #else
-                    #ifdef LIBSOCKET_DEBUG
-                        fprintf(stderr, "Got unhandled getaddrinfo error: %i.\n", err);
-                    #endif
-                    RETURNWITHERROR(InternalUnknownError, false);
-                #endif
-        }
+        SocketError err = translateeaierror(getaddrinfo(nodename, servicename, hints, &result));
+        if (err) RETURNWITHERROR(err, false);
     }
 
     #define LOOPALLOCFAILEDHANDLE \
         {\
             freeaddrinfo(result);\
-            socket_freeaddrinfo(firstresp); /* safe for NULL (for now xd). */\
+            if (firstresp) socket_freeaddrinfo(firstresp);\
             RETURNWITHERROR(MemoryAllocationFailed, false);\
         }
 
@@ -144,8 +149,11 @@ bool socket_getaddrinfo(const char *nodename, const char *servicename, const Soc
     RETURNWITHSUCCESS(true);
 }
 
-void socket_freeaddrinfo(SocketDNSResponse *response)
+bool socket_freeaddrinfo(SocketDNSResponse *response)
 {
+    ENSURE_INIT(false);
+    if (!response) RETURNWITHERROR(Fault, false);
+
     for (SocketDNSResponse *resp = response; resp;)
     {
         SocketDNSResponse *_resp = resp;
@@ -156,4 +164,13 @@ void socket_freeaddrinfo(SocketDNSResponse *response)
 
         libsocket_free(_resp); 
     }
+
+    RETURNWITHSUCCESS(true);
+}
+
+bool socket_getnameinfo(const SocketAddressInterface *sockaddr, socklen_t sockaddrlen, char *nodename, uint32_t nodenamesize, char *servicename, uint32_t servicenamesize, int flags)
+{
+    ENSURE_INIT(false);
+
+    RETURNWITHSUCCESS(true);
 }

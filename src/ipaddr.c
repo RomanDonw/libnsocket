@@ -26,14 +26,13 @@ bool socket_addrtostr(const IPAddressInterface *addr, SocketAddressFamily af, ch
 
     if (!inet_ntop(af, addr, straddr, size))
     {
+        int err = GETLASTERROR();
         #ifdef LIBSOCKET_OS_WINDOWS
-            int err = GETLASTERROR();
             if (err == SOCKERR_INVAL) socket_lasterror = NoSpaceLeft;
             else socket_lasterror = translateerror(err);
         #else
-            socket_lasterror = translateerror(GETLASTERROR());
+            socket_lasterror = translateerror(err);
         #endif
-
         return false;
     }
 
