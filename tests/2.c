@@ -118,8 +118,8 @@ void test(void)
     IPv4Address addr4 = IPV4ADDR_INIT(IPV4ADDR_PACK(127, 0, 0, 1));
     if (!socket_packsockaddr(&saddr, SocketAddressFamily_IPv4, &addr4, 9418)) handlesockerror("socket_packsockaddr");
 
-    char nodename[NI_MAXHOST];
-    char servicename[NI_MAXSERV];
+    char nodename[SOCKET_NI_HOSTMAXSTRSIZE];
+    char servicename[SOCKET_NI_SERVMAXSTRSIZE];
     if (!socket_getnameinfo(&saddr, sizeof(saddr), nodename, sizeof(nodename), servicename, sizeof(servicename), SOCKET_NI_NOFLAGS)) handlesockerror("socket_getnameinfo");
 
     printf("127.0.0.1:9418 resolved to (service | node) %s | %s.\n", servicename, nodename);
