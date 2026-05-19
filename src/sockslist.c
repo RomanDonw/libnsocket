@@ -15,26 +15,26 @@ bool sockslist_has(Socket *socket)
     return found;
 }
 
-sockslisterr_t sockslist_add(Socket *socket)
+SocketsListError sockslist_add(Socket *socket)
 {
-    if (sockslist_has(socket)) return SOCKSLISTERR_ITEMALREXIST;
+    if (sockslist_has(socket)) return SocketsListError_ItemAlreadyExist;
 
     {
         Socket **new_sockets = (Socket **)libsocket_realloc(sockets, sizeof(Socket *) * (sockets_count + 1));
-        if (!new_sockets) return SOCKSLISTERR_NOMEM;
+        if (!new_sockets) return SocketsListError_MemoryAllocationFailed;
         sockets = new_sockets;
     }
 
     sockets[sockets_count++] = socket;
-    return SOCKSLISTERR_SUCCESS;
+    return SocketsListError_Success;
 }
 
-sockslisterr_t sockslist_remove(Socket *socket)
+SocketsListError sockslist_remove(Socket *socket)
 {
     bool found = false;
     size_t pos;
     for (pos = 0; pos < sockets_count; pos++) if (sockets[pos] == socket) { found = true; break; }
-    if (!found) return SOCKSLISTERR_ITEMNOTEXIST;
+    if (!found) return SocketsListError_ItemNotExist;
 
     /*if (pos != sockets_count - 1) */sockets[pos] = sockets[sockets_count - 1];
     sockets_count--;
@@ -50,7 +50,7 @@ sockslisterr_t sockslist_remove(Socket *socket)
         sockets = NULL;
     }
 
-    return SOCKSLISTERR_SUCCESS;
+    return SocketsListError_Success;
 }
 
 void sockslist_removeall(void)

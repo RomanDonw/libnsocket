@@ -8,7 +8,7 @@
 void printipv4(IPv4Address addr, const char *addrname)
 {
     static char addrstr[IPV4ADDRSTRSIZE];
-    if (!socket_addrtostr(&addr, IPv4, addrstr, IPV4ADDRSTRSIZE)) handlesockerror("socket_addrtostr");
+    if (!socket_addrtostr(&addr, SocketAddressFamily_IPv4, addrstr, IPV4ADDRSTRSIZE)) handlesockerror("socket_addrtostr");
     printf("%s: %s\n", addrname, addrstr);
 }
 
@@ -16,7 +16,7 @@ const char *testname = "libsocket API generic test";
 
 void test(void)
 {
-    Socket *s = socket_open(IPv4, Stream, TCP);
+    Socket *s = socket_open(SocketAddressFamily_IPv4, SocketType_Stream, SocketProtocol_TCP);
     if (!s) handlesockerror("socket_open");
     puts(" === === [socket opened] === ===\n");
 
@@ -31,9 +31,9 @@ void test(void)
         char addrstr[IPV4ADDRSTRSIZE];
 
         // display address to bind, pack SocketAddress structure & bind to them.
-        if (!socket_addrtostr(&addr, IPv4, addrstr, IPV4ADDRSTRSIZE)) handlesockerror("socket_addrtostr");
+        if (!socket_addrtostr(&addr, SocketAddressFamily_IPv4, addrstr, IPV4ADDRSTRSIZE)) handlesockerror("socket_addrtostr");
         printf("Binding to address %s:%u...\n", addrstr, port);
-        if (!socket_packsockaddr(&saddr, IPv4, &addr, port)) handlesockerror("socket_packsockaddr");
+        if (!socket_packsockaddr(&saddr, SocketAddressFamily_IPv4, &addr, port)) handlesockerror("socket_packsockaddr");
         if (!socket_bind(s, &saddr, sizeof(saddr))) handlesockerror("socket_bind");
 
         // fill address & port variables with garbage.
@@ -41,17 +41,17 @@ void test(void)
         port = 0;
 
         // back unpack SocketAddress struct & display unpacked address and port.
-        if (!socket_unpacksockaddr(&saddr, IPv4, &addr, &port)) handlesockerror("socket_unpacksockaddr");
-        if (!socket_addrtostr(&addr, IPv4, addrstr, IPV4ADDRSTRSIZE)) handlesockerror("socket_addrtostr");
+        if (!socket_unpacksockaddr(&saddr, SocketAddressFamily_IPv4, &addr, &port)) handlesockerror("socket_unpacksockaddr");
+        if (!socket_addrtostr(&addr, SocketAddressFamily_IPv4, addrstr, IPV4ADDRSTRSIZE)) handlesockerror("socket_addrtostr");
         printf("Binded to address %s:%u.\n", addrstr, port);
 
         switch (socket_getsockaddraf(&saddr))
         {
-            case IPv4:
+            case SocketAddressFamily_IPv4:
                 puts("Socket has IPv4 address family.");
                 break;
 
-            case IPv6:
+            case SocketAddressFamily_IPv6:
                 puts("Socket has IPv6 address family.");
                 break;
 
@@ -65,13 +65,13 @@ void test(void)
     SocketLingerOptions ling;
     ling.enable = true;
     ling.linger = 5;
-    if (!socket_setopt(s, SocketLevel, Socket_Linger, &ling, sizeof(ling))) handlesockerror("socket_setopt");
+    if (!socket_setopt(s, SocketOptionLevel_Socket, SocketOptionName_Socket_Linger, &ling, sizeof(ling))) handlesockerror("socket_setopt");
 
     ling.enable = false;
     ling.linger = 666;
 
     socklen_t lingsz = sizeof(SocketLingerOptions);
-    if (!socket_getopt(s, SocketLevel, Socket_Linger, &ling, &lingsz)) handlesockerror("socket_getopt");
+    if (!socket_getopt(s, SocketOptionLevel_Socket, SocketOptionName_Socket_Linger, &ling, &lingsz)) handlesockerror("socket_getopt");
     printf("sizeof(SocketLingerOptions) = %llu    |    lingsz from socket_getopt = %d\n", sizeof(ling), lingsz);
     if (lingsz != sizeof(ling)) { puts("lingsz != sizeof(ling). TEST NOT PASSED. lingsz must be equal to sizeof(ling)! Testing aborted."); abort(); }
 

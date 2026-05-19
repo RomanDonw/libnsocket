@@ -5,16 +5,17 @@
 
 #include "libsocket.h"
 
-#define SOCKSLISTERR_SUCCESS 0
-#define SOCKSLISTERR_NOMEM 1
-#define SOCKSLISTERR_ITEMALREXIST 2
-#define SOCKSLISTERR_ITEMNOTEXIST 3
-
-typedef unsigned char sockslisterr_t;
+enum SocketsListError
+{
+    SocketsListError_Success = 0,
+    SocketsListError_MemoryAllocationFailed = 1,
+    SocketsListError_ItemAlreadyExist = 2,
+    SocketsListError_ItemNotExist = 3
+} typedef SocketsListError;
 
 bool sockslist_has(Socket *socket);
-sockslisterr_t sockslist_add(Socket *socket);
-sockslisterr_t sockslist_remove(Socket *socket);
+SocketsListError sockslist_add(Socket *socket);
+SocketsListError sockslist_remove(Socket *socket);
 void sockslist_removeall(void);
 
 #endif

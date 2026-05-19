@@ -54,15 +54,15 @@ Socket *socket_open(SocketAddressFamily af, SocketType type, SocketProtocol prot
     ret->protocol = protocol;
     ret->desc = desc;
 
-    sockslisterr_t err = sockslist_add(ret);
-    if (err != SOCKSLISTERR_SUCCESS)
+    SocketsListError err = sockslist_add(ret);
+    if (err != SocketsListError_Success)
     {
         CLOSESOCKET(desc);
         libsocket_free(ret);
 
         switch (err)
         {
-            case SOCKSLISTERR_NOMEM:
+            case SocketsListError_MemoryAllocationFailed:
                 RETURNWITHERROR(SocketError_MemoryAllocationFailed, NULL);
 
             default:
@@ -121,15 +121,15 @@ Socket *socket_accept(const Socket *socket, SocketAddressInterface *sockaddr, so
     ret->protocol = socket->protocol;
     ret->desc = desc;
 
-    sockslisterr_t err = sockslist_add(ret);
-    if (err != SOCKSLISTERR_SUCCESS)
+    SocketsListError err = sockslist_add(ret);
+    if (err != SocketsListError_Success)
     {
         CLOSESOCKET(desc);
         libsocket_free(ret);
 
         switch (err)
         {
-            case SOCKSLISTERR_NOMEM:
+            case SocketsListError_MemoryAllocationFailed:
                 RETURNWITHERROR(SocketError_MemoryAllocationFailed, NULL);
 
             default:
@@ -221,7 +221,7 @@ bool socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOptionNa
 
     switch (optname)
     {
-        case Socket_Linger:;
+        case SocketOptionName_Socket_Linger:;
             // this can do getsockopt -> if (level != SocketLevel) { SETLASTERROR(SOCKERR_NOPROTOOPT); return false; }
             if (!optval) RETURNWITHERROR(SocketError_Fault, false);
 
@@ -238,8 +238,8 @@ bool socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOptionNa
             *optlen = sizeof(lingopts);
             RETURNWITHSUCCESS(true);
 
-        case Socket_RecvTimeout:;
-        case Socket_SendTimeout:;
+        case SocketOptionName_Socket_RecvTimeout:;
+        case SocketOptionName_Socket_SendTimeout:;
             // this can do getsockopt -> if (level != SocketLevel) { SETLASTERROR(SOCKERR_NOPROTOOPT); return false; }
             if (!optval) RETURNWITHERROR(SocketError_Fault, false);
 
@@ -285,7 +285,7 @@ bool socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOptionNa
 
     switch (optname)
     {
-        case Socket_Linger:;
+        case SocketOptionName_Socket_Linger:;
             // this can do setsockopt -> if (level != SocketLevel) { SETLASTERROR(SOCKERR_NOPROTOOPT); return false; }
             if (!optval) RETURNWITHERROR(SocketError_Fault, false);
             if (optlen < sizeof(SocketLingerOptions)) RETURNWITHERROR(SocketError_IncorrectArgumentValue, false);
@@ -295,11 +295,11 @@ bool socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOptionNa
             struct linger ling;
             ling.l_onoff = lingopts->enable;
             ling.l_linger = lingopts->linger;
-            if (setsockopt(socket->desc, level, Socket_Linger, (void *)&ling, sizeof(ling))) RETURNWITHSYSERR(false);
+            if (setsockopt(socket->desc, level, SocketOptionName_Socket_Linger, (void *)&ling, sizeof(ling))) RETURNWITHSYSERR(false);
             RETURNWITHSUCCESS(true);
 
-        case Socket_RecvTimeout:;
-        case Socket_SendTimeout:;
+        case SocketOptionName_Socket_RecvTimeout:;
+        case SocketOptionName_Socket_SendTimeout:;
             // this can do setsockopt -> if (level != SocketLevel) { SETLASTERROR(SOCKERR_NOPROTOOPT); return false; }
             if (!optval) RETURNWITHERROR(SocketError_Fault, false);
             if (optlen < sizeof(uint32_t)) RETURNWITHERROR(SocketError_IncorrectArgumentValue, false);

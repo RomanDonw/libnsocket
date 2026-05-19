@@ -104,14 +104,14 @@ enum SocketAddressFamily
 
 enum SocketType
 {
-    SocketType_Any = 0,
+    SocketType_Unspecified = 0,
     SocketType_Stream = SOCK_STREAM,
     SocketType_Datagram = SOCK_DGRAM
 } typedef SocketType;
 
 enum SocketProtocol
 {
-    SocketProtocol_Any = 0,
+    SocketProtocol_Unspecified = 0,
     SocketProtocol_TCP = IPPROTO_TCP,
     SocketProtocol_UDP = IPPROTO_UDP
 } typedef SocketProtocol;
@@ -130,21 +130,21 @@ enum SocketOptionLevel
 
 enum SocketOptionName
 {
-    // SocketLevel
-    Socket_RecvBufferSize = SO_RCVBUF, // int, readable/writable.
-    Socket_SendBufferSize = SO_SNDBUF, // int, readable/writable.
-    Socket_KeepAliveConnection = SO_KEEPALIVE, // int (bool), readable/writable.
-    Socket_AcceptConnections = SO_ACCEPTCONN, // int (bool), readonly.
-    Socket_InternalError = SO_ERROR, // int, readonly.
-    Socket_AllowReuseAddress = SO_REUSEADDR, // int (bool), readable/writable.
-    Socket_Broadcast = SO_BROADCAST, // int (bool), readable/writable.
-    Socket_Linger = SO_LINGER, // struct SocketLingerOptions, readable/writable.
-    Socket_RecvTimeout = SO_RCVTIMEO, // uint32_t (milliseconds), readable/writable.
-    Socket_SendTimeout = SO_SNDTIMEO, // uint32_t (milliseconds), readable/writable.
+    // Socket level.
+    SocketOptionName_Socket_RecvBufferSize = SO_RCVBUF, // int, readable/writable.
+    SocketOptionName_Socket_SendBufferSize = SO_SNDBUF, // int, readable/writable.
+    SocketOptionName_Socket_KeepAliveConnection = SO_KEEPALIVE, // int (bool), readable/writable.
+    SocketOptionName_Socket_AcceptConnections = SO_ACCEPTCONN, // int (bool), readonly.
+    SocketOptionName_Socket_InternalError = SO_ERROR, // int, readonly.
+    SocketOptionName_Socket_AllowReuseAddress = SO_REUSEADDR, // int (bool), readable/writable.
+    SocketOptionName_Socket_Broadcast = SO_BROADCAST, // int (bool), readable/writable.
+    SocketOptionName_Socket_Linger = SO_LINGER, // struct SocketLingerOptions, readable/writable.
+    SocketOptionName_Socket_RecvTimeout = SO_RCVTIMEO, // uint32_t (milliseconds), readable/writable.
+    SocketOptionName_Socket_SendTimeout = SO_SNDTIMEO, // uint32_t (milliseconds), readable/writable.
 
-    // TCPLevel
-    TCP_DisableDelay = TCP_NODELAY, // int (bool), readable/writable.
-    TCP_MaximumDataSegmentSize = TCP_MAXSEG, // int, readable/writable.
+    // TCP level.
+    SocketOptionName_TCP_DisableDelay = TCP_NODELAY, // int (bool), readable/writable.
+    SocketOptionName_TCP_MaximumDataSegmentSize = TCP_MAXSEG, // int, readable/writable.
 } typedef SocketOptionName;
 
 enum SocketError

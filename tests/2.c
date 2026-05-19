@@ -18,15 +18,15 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
 
         switch (currresp->af)
         {
-            case UnspecifiedAddressFamily:
+            case SocketAddressFamily_Unspecified:
                 puts("(unspecified).");
                 break;
 
-            case IPv4:
+            case SocketAddressFamily_IPv4:
                 puts("IPv4.");
                 break;
 
-            case IPv6:
+            case SocketAddressFamily_IPv6:
                 puts("IPv6.");
                 break;
 
@@ -37,15 +37,15 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
         printf(" -  Socket type: ");
         switch (currresp->type)
         {
-            case AnySocketType:
+            case SocketType_Unspecified:
                 puts("(any).");
                 break;
 
-            case Stream:
+            case SocketType_Stream:
                 puts("stream.");
                 break;
 
-            case Datagram:
+            case SocketType_Datagram:
                 puts("datagram.");
                 break;
 
@@ -56,15 +56,15 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
         printf(" -  Protocol: ");
         switch (currresp->protocol)
         {
-            case AnyProtocol:
+            case SocketProtocol_Unspecified:
                 puts("(any).");
                 break;
 
-            case TCP:
+            case SocketProtocol_TCP:
                 puts("TCP.");
                 break;
             
-            case UDP:
+            case SocketProtocol_UDP:
                 puts("UDP.");
                 break;
 
@@ -105,9 +105,9 @@ void test(void)
     SocketDNSRequest req =
     {
         .flags = AI_CANONNAME,
-        .af = IPv4,
-        .type = Stream,
-        .protocol = TCP
+        .af = SocketAddressFamily_IPv4,
+        .type = SocketType_Stream,
+        .protocol = SocketProtocol_TCP
     };
 
     printdnsinfo("github.com", "http", &req);
@@ -116,7 +116,7 @@ void test(void)
 
     SocketIPv4Address saddr;
     IPv4Address addr4 = IPV4ADDR_INIT(IPV4ADDR_PACK(127, 0, 0, 1));
-    if (!socket_packsockaddr(&saddr, IPv4, &addr4, 9418)) handlesockerror("socket_packsockaddr");
+    if (!socket_packsockaddr(&saddr, SocketAddressFamily_IPv4, &addr4, 9418)) handlesockerror("socket_packsockaddr");
 
     char nodename[NI_MAXHOST];
     char servicename[NI_MAXSERV];

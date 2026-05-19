@@ -10,7 +10,7 @@ int getsocksendbuffsize(const Socket *s)
     int sendbuffsize;
     
     socklen_t sendbuffsize_len = sizeof(sendbuffsize);
-    if (!socket_getopt(s, SocketLevel, Socket_SendBufferSize, &sendbuffsize, &sendbuffsize_len)) { puts("socket_getopt error"); abort(); }
+    if (!socket_getopt(s, SocketOptionLevel_Socket, SocketOptionName_Socket_SendBufferSize, &sendbuffsize, &sendbuffsize_len)) { puts("socket_getopt error"); abort(); }
     if (sendbuffsize_len != sizeof(sendbuffsize)) { puts("sendbuffsize_len != sizeof(sendbuffsize). Abort."); abort(); }
 
     return sendbuffsize;
@@ -18,14 +18,14 @@ int getsocksendbuffsize(const Socket *s)
 
 void setsocksendbuffsize(const Socket *s, int size)
 {
-    if (!socket_setopt(s, SocketLevel, Socket_SendBufferSize, &size, sizeof(size))) { puts("socket_setopt error. Abort."); abort(); }
+    if (!socket_setopt(s, SocketOptionLevel_Socket, SocketOptionName_Socket_RecvBufferSize, &size, sizeof(size))) { puts("socket_setopt error. Abort."); abort(); }
 }
 
 const char *testname = "HTTP 1.0 GET request to localhost:8000";
 
 void test(void)
 {
-    Socket *s = socket_open(IPv4, Stream, TCP);
+    Socket *s = socket_open(SocketAddressFamily_IPv4, SocketType_Stream, SocketProtocol_TCP);
     if (!s) handlesockerror("socket_open");
 
     printf("Old send buffer size: %i\n", getsocksendbuffsize(s));
@@ -34,7 +34,7 @@ void test(void)
 
     IPv4Address localhost = IPV4ADDR_LOOPBACK;
     SocketIPv4Address saddr;
-    if (!socket_packsockaddr(&saddr, IPv4, &localhost, 8000)) handlesockerror("socket_packsockaddr");
+    if (!socket_packsockaddr(&saddr, SocketAddressFamily_IPv4, &localhost, 8000)) handlesockerror("socket_packsockaddr");
     if (!socket_connect(s, &saddr, sizeof(saddr))) handlesockerror("socket_connect");
 
     const char *request = "GET / HTTP/1.0\r\n\r\n";
