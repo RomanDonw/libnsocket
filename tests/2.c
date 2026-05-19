@@ -104,7 +104,7 @@ void test(void)
 
     SocketDNSRequest req =
     {
-        .flags = SOCKET_AI_CANONNAME,
+        .flags = SOCKET_AI_FLAG_CANONNAME,
         .af = SocketAddressFamily_IPv4,
         .type = SocketType_Stream,
         .protocol = SocketProtocol_TCP
@@ -120,7 +120,7 @@ void test(void)
 
     char nodename[NI_MAXHOST];
     char servicename[NI_MAXSERV];
-    if (!socket_getnameinfo(&saddr, sizeof(saddr), nodename, sizeof(nodename), servicename, sizeof(servicename), 0)) handlesockerror("socket_getnameinfo");
+    if (!socket_getnameinfo(&saddr, sizeof(saddr), nodename, sizeof(nodename), servicename, sizeof(servicename), SOCKET_NI_NOFLAGS)) handlesockerror("socket_getnameinfo");
 
     printf("127.0.0.1:9418 resolved to (service | node) %s | %s.\n", servicename, nodename);
 }
