@@ -104,7 +104,7 @@ void test(void)
 
     SocketDNSRequest req =
     {
-        .flags = AI_CANONNAME,
+        .flags = SOCKET_AI_CANONNAME,
         .af = SocketAddressFamily_IPv4,
         .type = SocketType_Stream,
         .protocol = SocketProtocol_TCP

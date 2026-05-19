@@ -42,9 +42,9 @@
 
     enum SocketShutdownMode
     {
-        OnlyRecv = SD_RECEIVE,
-        OnlySend = SD_SEND,
-        Both = SD_BOTH
+        SocketShutdownMode_OnlyRecv = SD_RECEIVE,
+        SocketShutdownMode_OnlySend = SD_SEND,
+        SocketShutdownMode_Both = SD_BOTH
     } typedef SocketShutdownMode;
 
 #else
@@ -77,9 +77,9 @@
 
     enum SocketShutdownMode
     {
-        OnlyRecv = SHUT_RD,
-        OnlySend = SHUT_WR,
-        Both = SHUT_RDWR
+        SocketShutdownMode_OnlyRecv = SHUT_RD,
+        SocketShutdownMode_OnlySend = SHUT_WR,
+        SocketShutdownMode_Both = SHUT_RDWR
     } typedef SocketShutdownMode;
 
 #endif
@@ -219,6 +219,15 @@ struct SocketStartupOptions
 #define SOCKET_SEND_NOFLAGS 0
 #define SOCKET_SEND_FLAG_DONTROUTE MSG_DONTROUTE
 
+// flags for SocketDNSRequest/SocketDNSResponse.
+#define SOCKET_AI_PASSIVE AI_PASSIVE
+#define SOCKET_AI_CANONNAME AI_CANONNAME
+#define SOCKET_AI_NUMERICHOST AI_NUMERICHOST
+#define SOCKET_AI_NUMERICSERV AI_NUMERICSERV
+#define SOCKET_AI_ADDRCONFIG AI_ADDRCONFIG
+#define SOCKET_AI_IPV4MAPPED AI_V4MAPPED
+#define SOCKET_AI_ALL AI_ALL
+
 typedef struct Socket Socket;
 
 typedef struct sockaddr_in SocketIPv4Address;
@@ -244,7 +253,7 @@ LIBSOCKET_API extern const IPv6Address IPV6ADDR_ANY;
 LIBSOCKET_API extern const IPv6Address IPV6ADDR_LOOPBACK;
 
 #define LIBSOCKET_SOCKETDNSBASE \
-    int flags; /* see <netdb.h> getaddrinfo function flags documentation for more info. */\
+    int flags; /* see SOCKET_AI_... flags for more info. */\
     SocketAddressFamily af;\
     SocketType type;\
     SocketProtocol protocol;
