@@ -43,7 +43,7 @@ void test(void)
     waitms(100);
 
     uint32_t avail;
-    if (!socket_ioctl(s, AvailableDataToRead, &avail)) handlesockerror("socket_ioctl");
+    if (!socket_ioctl(s, SocketIOCTLOption_AvailableDataToRead, &avail)) handlesockerror("socket_ioctl");
     printf("Available bytes: %lu\n", avail);
 
     //const size_t BUFFER_SIZE = 512;

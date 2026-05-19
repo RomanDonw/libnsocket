@@ -171,7 +171,7 @@ bool socket_ioctl(const Socket *socket, SocketIOCTLOption option, void *value)
 
     switch (option)
     {
-        case NonBlockingIO:
+        case SocketIOCTLOption_NonBlockingIO:
         {
             #ifdef LIBSOCKET_OS_WINDOWS
                 unsigned long val = *(bool *)value;
@@ -187,7 +187,7 @@ bool socket_ioctl(const Socket *socket, SocketIOCTLOption option, void *value)
             RETURNWITHSUCCESS(true);
         }
 
-        case AvailableDataToRead:
+        case SocketIOCTLOption_AvailableDataToRead:
         {
             #ifdef LIBSOCKET_OS_WINDOWS
                 unsigned long val;
@@ -227,7 +227,7 @@ bool socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOptionNa
 
             struct linger ling;
             socklen_t lingsz = sizeof(ling);
-            if (getsockopt(socket->desc, SocketLevel, Socket_Linger, (void *)&ling, &lingsz)) RETURNWITHSYSERR(false);
+            if (getsockopt(socket->desc, level, optname, (void *)&ling, &lingsz)) RETURNWITHSYSERR(false);
             if (lingsz > sizeof(ling)) RETURNWITHERROR(SocketError_InternalUnknownError, false);
 
             SocketLingerOptions lingopts;

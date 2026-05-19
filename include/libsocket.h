@@ -97,35 +97,35 @@
 
 enum SocketAddressFamily
 {
-    UnspecifiedAddressFamily = AF_UNSPEC,
-    IPv4 = AF_INET,
-    IPv6 = AF_INET6
+    SocketAddressFamily_Unspecified = AF_UNSPEC,
+    SocketAddressFamily_IPv4 = AF_INET,
+    SocketAddressFamily_IPv6 = AF_INET6
 } typedef SocketAddressFamily;
 
 enum SocketType
 {
-    AnySocketType = 0,
-    Stream = SOCK_STREAM,
-    Datagram = SOCK_DGRAM
+    SocketType_Any = 0,
+    SocketType_Stream = SOCK_STREAM,
+    SocketType_Datagram = SOCK_DGRAM
 } typedef SocketType;
 
 enum SocketProtocol
 {
-    AnyProtocol = 0,
-    TCP = IPPROTO_TCP,
-    UDP = IPPROTO_UDP
+    SocketProtocol_Any = 0,
+    SocketProtocol_TCP = IPPROTO_TCP,
+    SocketProtocol_UDP = IPPROTO_UDP
 } typedef SocketProtocol;
 
 enum SocketIOCTLOption
 {
-    NonBlockingIO, // bool, writeonly.
-    AvailableDataToRead // uint32_t, readonly.
+    SocketIOCTLOption_NonBlockingIO, // bool, writeonly.
+    SocketIOCTLOption_AvailableDataToRead // uint32_t, readonly.
 } typedef SocketIOCTLOption;
 
 enum SocketOptionLevel
 {
-    SocketLevel = SOL_SOCKET,
-    TCPLevel = IPPROTO_TCP
+    SocketOptionLevel_Socket = SOL_SOCKET,
+    SocketOptionLevel_TCP = IPPROTO_TCP
 } typedef SocketOptionLevel;
 
 enum SocketOptionName
