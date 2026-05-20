@@ -11,10 +11,14 @@
 extern const char *testname;
 extern void test(void);
 
-void testabort(char *reason, bool freereasonfrommem); // reason can be NULL.
+// frees reason before calling abort function.
+void testabort_f(char *reason); // reason can be NULL.
+
+// don't frees reason before calling abort function.
+void testabort_c(const char *reason); // reason can be NULL.
 
 void waitms(uint32_t milliseconds);
-void handlesockerror(const char *funcname);
+void handlesockerror(SocketError err, const char *funcname);
 
 void *malloc_s(size_t size); // can`t return NULL.
 void *realloc_s(void *ptr, size_t size); // can`t return NULL.

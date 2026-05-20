@@ -144,8 +144,9 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
 
 #define SOCKIOFUNCPROTO(func) \
     ENSURE_INIT;\
-    *processedbytes = func;\
-    if (*processedbytes < 0) return translateerror(GETLASTERROR());\
+    ssize_t procbytes = func;\
+    if (processedbytes) *processedbytes = procbytes;\
+    if (procbytes < 0) return translateerror(GETLASTERROR());\
     return SocketError_Success;
 
 SocketError socket_recv(const Socket *socket, void *buffer, size_t len, ssize_t *processedbytes, int flags)

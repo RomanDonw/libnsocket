@@ -5,28 +5,29 @@
 #include <time.h>
 #include <string.h>
 
+static SocketError err;
+
 int getsocksendbuffsize(const Socket *s)
 {
     int sendbuffsize;
-    
     socklen_t sendbuffsize_len = sizeof(sendbuffsize);
-    if (!socket_getopt(s, SocketOptionLevel_Socket, SocketOptionName_Socket_SendBufferSize, &sendbuffsize, &sendbuffsize_len)) { puts("socket_getopt error"); abort(); }
-    if (sendbuffsize_len != sizeof(sendbuffsize)) { puts("sendbuffsize_len != sizeof(sendbuffsize). Abort."); abort(); }
-
+    if ((err = socket_getopt(s, SocketOptionLevel_Socket, SocketOptionName_Socket_SendBufferSize, &sendbuffsize, &sendbuffsize_len)) != SocketError_Success) handlesockerror(err, "socket_getopt");
+    if (sendbuffsize_len != sizeof(sendbuffsize)) testabort_c("sendbuffsize_len != sizeof(sendbuffsize). Abort.");
     return sendbuffsize;
 }
 
 void setsocksendbuffsize(const Socket *s, int size)
 {
-    if (!socket_setopt(s, SocketOptionLevel_Socket, SocketOptionName_Socket_RecvBufferSize, &size, sizeof(size))) { puts("socket_setopt error. Abort."); abort(); }
+    err = socket_setopt(s, SocketOptionLevel_Socket, SocketOptionName_Socket_RecvBufferSize, &size, sizeof(size));
+    if (err != SocketError_Success) handlesockerror(err, "socket_setopt");
 }
 
 const char *testname = "HTTP 1.0 GET request to localhost:8000";
 
 void test(void)
 {
-    Socket *s = socket_open(SocketAddressFamily_IPv4, SocketType_Stream, SocketProtocol_TCP);
-    if (!s) handlesockerror("socket_open");
+    Socket *s;
+    if ((err = socket_open(&s, SocketAddressFamily_IPv4, SocketType_Stream, SocketProtocol_TCP)) != SocketError_Success) handlesockerror(err, "socket_open");
 
     printf("Old send buffer size: %i\n", getsocksendbuffsize(s));
     setsocksendbuffsize(s, 4096);
@@ -34,26 +35,27 @@ void test(void)
 
     IPv4Address localhost = IPV4ADDR_LOOPBACK;
     SocketIPv4Address saddr;
-    if (!socket_packsockaddr(&saddr, SocketAddressFamily_IPv4, &localhost, 8000)) handlesockerror("socket_packsockaddr");
-    if (!socket_connect(s, &saddr, sizeof(saddr))) handlesockerror("socket_connect");
+    if ((err = socket_packsockaddr(&saddr, SocketAddressFamily_IPv4, &localhost, 8000)) != SocketError_Success) handlesockerror(err, "socket_packsockaddr");
+    if ((err = socket_connect(s, &saddr, sizeof(saddr))) != SocketError_Success) handlesockerror(err, "socket_connect");
 
     const char *request = "GET / HTTP/1.0\r\n\r\n";
-    if (!socket_send(s, request, strlen(request), SOCKET_SEND_NOFLAGS)) handlesockerror("socket_send");
+    if ((err = socket_send(s, request, strlen(request), NULL, SOCKET_SEND_NOFLAGS)) != SocketError_Success) handlesockerror(err, "socket_send");
 
     waitms(100);
 
     uint32_t avail;
-    if (!socket_ioctl(s, SocketIOCTLOption_AvailableDataToRead, &avail)) handlesockerror("socket_ioctl");
+    if ((err = socket_ioctl(s, SocketIOCTLOption_AvailableDataToRead, &avail)) != SocketError_Success) handlesockerror(err, "socket_ioctl");
     printf("Available bytes: %lu\n", avail);
 
     //const size_t BUFFER_SIZE = 512;
     #define BUFFER_SIZE 512
     char buffer[BUFFER_SIZE];
     ssize_t readbytes;
-    while ((readbytes = socket_recv(s, buffer, BUFFER_SIZE, SOCKET_RECV_NOFLAGS)) > 0)
+    while (true)
     {
+        if ((err = socket_recv(s, buffer, BUFFER_SIZE, &readbytes, SOCKET_RECV_NOFLAGS)) != SocketError_Success || readbytes <= 0) break;
         for (size_t i = 0; i < readbytes; i++) putchar(buffer[i]);
     }
 
-    if (!socket_close(s)) handlesockerror("socket_close");
+    if ((err = socket_close(s)) != SocketError_Success) handlesockerror(err, "socket_close");
 }

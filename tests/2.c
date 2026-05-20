@@ -2,12 +2,14 @@
 
 #include <stdio.h>
 
+static SocketError err;
+
 const char *testname = "socket_getaddrinfo & socket_getnameinfo test";
 
 void printdnsinfo(const char *nodename, const char *servicename, const SocketDNSRequest *req)
 {
     SocketDNSResponse *resps;
-    if (!socket_getaddrinfo(nodename, servicename, req, &resps)) handlesockerror("socket_getaddrinfo");
+    if ((err = socket_getaddrinfo(nodename, servicename, req, &resps)) != SocketError_Success) handlesockerror(err, "socket_getaddrinfo");
 
     printf("======================================\n   node: %s, service: %s\n======================================\n", nodename, servicename);
 
@@ -79,10 +81,10 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
         {
             static char ipaddr[256];
             static unsigned short port;
-            if (!socket_unpacksockaddr(currresp->sockaddr, currresp->af, ipaddr, &port)) handlesockerror("socket_unpacksockaddr");
+            if ((err = socket_unpacksockaddr(currresp->sockaddr, currresp->af, ipaddr, &port)) != SocketError_Success) handlesockerror(err, "socket_unpacksockaddr");
 
             static char addrstr[1024];
-            if (!socket_addrtostr(ipaddr, currresp->af, addrstr, sizeof(addrstr))) handlesockerror("socket_addrtostr");
+            if ((err = socket_addrtostr(ipaddr, currresp->af, addrstr, sizeof(addrstr))) != SocketError_Success) handlesockerror(err, "socket_addrtostr");
 
             printf(" -  Address: [%s]:%u\n", addrstr, port);
         }
@@ -116,11 +118,11 @@ void test(void)
 
     SocketIPv4Address saddr;
     IPv4Address addr4 = IPV4ADDR_INIT(IPV4ADDR_PACK(127, 0, 0, 1));
-    if (!socket_packsockaddr(&saddr, SocketAddressFamily_IPv4, &addr4, 9418)) handlesockerror("socket_packsockaddr");
+    if ((err = socket_packsockaddr(&saddr, SocketAddressFamily_IPv4, &addr4, 9418)) != SocketError_Success) handlesockerror(err, "socket_packsockaddr");
 
     char nodename[SOCKET_NI_HOSTMAXSTRSIZE];
     char servicename[SOCKET_NI_SERVMAXSTRSIZE];
-    if (!socket_getnameinfo(&saddr, sizeof(saddr), nodename, sizeof(nodename), servicename, sizeof(servicename), SOCKET_NI_NOFLAGS)) handlesockerror("socket_getnameinfo");
+    if ((err = socket_getnameinfo(&saddr, sizeof(saddr), nodename, sizeof(nodename), servicename, sizeof(servicename), SOCKET_NI_NOFLAGS)) != SocketError_Success) handlesockerror(err, "socket_getnameinfo");
 
     printf("127.0.0.1:9418 resolved to (service | node) %s | %s.\n", servicename, nodename);
 }
