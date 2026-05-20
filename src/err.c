@@ -5,8 +5,6 @@
     #include <stdio.h>
 #endif
 
-SocketError socket_lasterror = SocketError_Success;
-
 SocketError translateerror(int err)
 {
     switch (err)

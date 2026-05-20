@@ -11,13 +11,13 @@ void *(*libsocket_malloc)(size_t) = malloc;
 void *(*libsocket_realloc)(void *, size_t) = realloc;
 void (*libsocket_free)(void *) = free;
 
-bool inited = false;
+static bool inited = false;
 
 bool socket_initialized(void) { return inited; }
 
-bool socket_startup(const SocketStartupOptions *options)
+SocketError socket_startup(const SocketStartupOptions *options)
 {
-    if (inited) RETURNWITHERROR(SocketError_AlreadyInitialized, false);
+    if (inited) return SocketError_AlreadyInitialized;
 
     #ifdef LIBSOCKET_OS_WINDOWS
         static const SocketStartupOptions defaultopts =
@@ -29,25 +29,25 @@ bool socket_startup(const SocketStartupOptions *options)
 
         WSADATA data;
         int err = WSAStartup(options->winsock_version, &data);
-        if (err) RETURNWITHERROR(translateerror(err), false);
+        if (err) return translateerror(err);
         //if (data.wVersion != version) { if (WSACleanup()) RETURNWITHSYSERR(false); RETURNWITHERROR(SocketError_WSAVersionNotSupported, false); }
-        if (data.wVersion != options->winsock_version) { WSACleanup(); RETURNWITHERROR(SocketError_WSAVersionsNotMatch, false); }
+        if (data.wVersion != options->winsock_version) { WSACleanup(); return SocketError_WSAVersionsNotMatch; }
     #endif
 
     inited = true;
-    RETURNWITHSUCCESS(true);
+    return SocketError_Success;
 }
 
-bool socket_cleanup(void)
+SocketError socket_cleanup(void)
 {
-    if (!inited) RETURNWITHERROR(SocketError_NotInitialized, false);
+    if (!inited) return SocketError_NotInitialized;
 
     #ifdef LIBSOCKET_OS_WINDOWS
-        if (WSACleanup()) RETURNWITHSYSERR(false);
+        if (WSACleanup()) return translateerror(GETLASTERROR());
     #endif
     
     sockslist_removeall();
 
     inited = false;
-    RETURNWITHSUCCESS(true);
+    return SocketError_Success;
 }

@@ -13,7 +13,7 @@
 #define GETSOCKADDRAF(sockaddr_ptr) (((const struct sockaddr *)sockaddr_ptr)->sa_family)
 SocketAddressFamily socket_getsockaddraf(const SocketAddressInterface *sockaddr) { return GETSOCKADDRAF(sockaddr); }
 
-bool socket_packsockaddr(SocketAddressInterface *sockaddr, SocketAddressFamily af, const IPAddressInterface *addr, unsigned short port)
+SocketError socket_packsockaddr(SocketAddressInterface *sockaddr, SocketAddressFamily af, const IPAddressInterface *addr, unsigned short port)
 {
     switch (af)
     {
@@ -38,15 +38,15 @@ bool socket_packsockaddr(SocketAddressInterface *sockaddr, SocketAddressFamily a
             break;
 
         default:
-            RETURNWITHERROR(SocketError_UnsupportedAddressFamily, false);
+            return SocketError_UnsupportedAddressFamily;
     }
 
-    RETURNWITHSUCCESS(true);
+    return SocketError_Success;
 }
 
-bool socket_unpacksockaddr(const SocketAddressInterface *sockaddr, SocketAddressFamily af, IPAddressInterface *addr, unsigned short *port)
+SocketError socket_unpacksockaddr(const SocketAddressInterface *sockaddr, SocketAddressFamily af, IPAddressInterface *addr, unsigned short *port)
 {
-    if (GETSOCKADDRAF(sockaddr) != af) RETURNWITHERROR(SocketError_IncorrectArgumentValue, false);
+    if (GETSOCKADDRAF(sockaddr) != af) return SocketError_IncorrectArgumentValue;
 
     switch (af)
     {
@@ -63,8 +63,8 @@ bool socket_unpacksockaddr(const SocketAddressInterface *sockaddr, SocketAddress
             break;
 
         default:
-            RETURNWITHERROR(SocketError_UnsupportedAddressFamily, false);
+            return SocketError_UnsupportedAddressFamily;
     }
 
-    RETURNWITHSUCCESS(true);
+    return SocketError_Success;
 }

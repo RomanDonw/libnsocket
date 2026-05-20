@@ -11,30 +11,29 @@
     #include <arpa/inet.h>
 #endif
 
-bool socket_parseaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr)
+SocketError socket_parseaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr)
 {
-    ENSURE_INIT(false);
+    ENSURE_INIT;
     int ret = inet_pton(af, straddr, addr);
-    if (ret == 0) RETURNWITHERROR(SocketError_ParsingAddressFailed, false);
-    if (ret == -1) RETURNWITHSYSERR(false);
-    RETURNWITHSUCCESS(true);
+    if (ret == 0) return SocketError_ParsingAddressFailed;
+    if (ret == -1) return translateerror(GETLASTERROR());
+    return SocketError_Success;
 }
 
-bool socket_addrtostr(const IPAddressInterface *addr, SocketAddressFamily af, char *straddr, socklen_t size)
+SocketError socket_addrtostr(const IPAddressInterface *addr, SocketAddressFamily af, char *straddr, socklen_t size)
 {
-    ENSURE_INIT(false);
+    ENSURE_INIT;
 
     if (!inet_ntop(af, addr, straddr, size))
     {
         int err = GETLASTERROR();
         #ifdef LIBSOCKET_OS_WINDOWS
-            if (err == SOCKERR_INVAL) socket_lasterror = SocketError_NoSpaceLeft;
-            else socket_lasterror = translateerror(err);
+            if (err == SOCKERR_INVAL) return SocketError_NoSpaceLeft;
+            else return translateerror(err);
         #else
-            socket_lasterror = translateerror(err);
+            return translateerror(err);
         #endif
-        return false;
     }
 
-    RETURNWITHSUCCESS(true);
+    return SocketError_Success;
 }

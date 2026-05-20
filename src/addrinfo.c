@@ -54,9 +54,9 @@ static SocketError translateeaierror(int err)
     }
 }
 
-bool socket_getaddrinfo(const char *nodename, const char *servicename, const SocketDNSRequest *request, SocketDNSResponse **response)
+SocketError socket_getaddrinfo(const char *nodename, const char *servicename, const SocketDNSRequest *request, SocketDNSResponse **response)
 {
-    ENSURE_INIT(false);
+    ENSURE_INIT;
     
     struct addrinfo *hints = NULL;
     struct addrinfo _hints = {0};
@@ -73,14 +73,14 @@ bool socket_getaddrinfo(const char *nodename, const char *servicename, const Soc
     struct addrinfo *result;
     {
         SocketError err = translateeaierror(getaddrinfo(nodename, servicename, hints, &result));
-        if (err != SocketError_Success) RETURNWITHERROR(err, false);
+        if (err != SocketError_Success) return err;
     }
 
     #define LOOPALLOCFAILEDHANDLE \
         {\
             freeaddrinfo(result);\
             socket_freeaddrinfo(firstresp);\
-            RETURNWITHERROR(SocketError_MemoryAllocationFailed, false);\
+            return SocketError_MemoryAllocationFailed;\
         }
 
     SocketDNSResponse *firstresp = NULL;
@@ -136,7 +136,7 @@ bool socket_getaddrinfo(const char *nodename, const char *servicename, const Soc
 
     freeaddrinfo(result);
     *response = firstresp;
-    RETURNWITHSUCCESS(true);
+    return SocketError_Success;
 }
 
 void socket_freeaddrinfo(SocketDNSResponse *response)
@@ -153,10 +153,8 @@ void socket_freeaddrinfo(SocketDNSResponse *response)
     }
 }
 
-bool socket_getnameinfo(const SocketAddressInterface *sockaddr, socklen_t sockaddrlen, char *nodename, uint32_t nodenamesize, char *servicename, uint32_t servicenamesize, int flags)
+SocketError socket_getnameinfo(const SocketAddressInterface *sockaddr, socklen_t sockaddrlen, char *nodename, uint32_t nodenamesize, char *servicename, uint32_t servicenamesize, int flags)
 {
-    ENSURE_INIT(false);
-    SocketError err = translateeaierror(getnameinfo(sockaddr, sockaddrlen, nodename, nodenamesize, servicename, servicenamesize, flags));
-    if (err) RETURNWITHERROR(err, false);
-    RETURNWITHSUCCESS(true);
+    ENSURE_INIT;
+    return translateeaierror(getnameinfo(sockaddr, sockaddrlen, nodename, nodenamesize, servicename, servicenamesize, flags));
 }

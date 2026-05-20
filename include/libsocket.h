@@ -40,13 +40,6 @@
     typedef SSIZE_T ssize_t;
     typedef SOCKET SOCKETDESCRIPTOR;
 
-    enum SocketShutdownMode
-    {
-        SocketShutdownMode_OnlyRecv = SD_RECEIVE,
-        SocketShutdownMode_OnlySend = SD_SEND,
-        SocketShutdownMode_Both = SD_BOTH
-    } typedef SocketShutdownMode;
-
 #else
     // POSIX environment.
 
@@ -240,6 +233,13 @@ struct SocketStartupOptions
 #define SOCKET_NI_HOSTMAXSTRSIZE NI_MAXHOST
 #define SOCKET_NI_SERVMAXSTRSIZE NI_MAXSERV
 
+// flags for socket_shutdown.
+typedef unsigned char SocketShutdownFlags;
+#define SOCKET_SD_NOFLAGS 0b0 // 00b
+#define SOCKET_SD_FLAG_RECV 0b01 // 01b
+#define SOCKET_SD_FLAG_SEND 0b10 // 10b
+#define SOCKET_SD_ALLFLAGS 0b11 // 11b
+
 typedef struct Socket Socket;
 
 typedef struct sockaddr_in SocketIPv4Address;
@@ -292,56 +292,55 @@ LIBSOCKET_API extern void *(*libsocket_malloc)(size_t);
 LIBSOCKET_API extern void *(*libsocket_realloc)(void *, size_t);
 LIBSOCKET_API extern void (*libsocket_free)(void *);
 
-LIBSOCKET_API extern SocketError socket_lasterror; // can be accessed without library initialization.
 LIBSOCKET_API const char * LIBSOCKET_ABI socket_strerror(SocketError errcode); // can be accessed without library initialization.
 
 LIBSOCKET_API bool LIBSOCKET_ABI socket_initialized(void); // can be accessed without library initialization.
-LIBSOCKET_API bool LIBSOCKET_ABI socket_startup(const SocketStartupOptions *options); // options can be NULL.
-LIBSOCKET_API bool LIBSOCKET_ABI socket_cleanup(void);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_startup(const SocketStartupOptions *options); // options can be NULL.
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_cleanup(void);
 
-LIBSOCKET_API bool LIBSOCKET_ABI socket_parseaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr);
-LIBSOCKET_API bool LIBSOCKET_ABI socket_addrtostr(const IPAddressInterface *addr, SocketAddressFamily af, char *straddr, socklen_t size);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_parseaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_addrtostr(const IPAddressInterface *addr, SocketAddressFamily af, char *straddr, socklen_t size);
 
 // [socket_getsockaddraf]: can be accessed without library initialization.
 LIBSOCKET_API SocketAddressFamily LIBSOCKET_ABI socket_getsockaddraf(const SocketAddressInterface *sockaddr);
 // [socket_packsockaddr]: can be accessed without library initialization.
-LIBSOCKET_API bool LIBSOCKET_ABI socket_packsockaddr(SocketAddressInterface *sockaddr, SocketAddressFamily af, const IPAddressInterface *addr, unsigned short port);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_packsockaddr(SocketAddressInterface *sockaddr, SocketAddressFamily af, const IPAddressInterface *addr, unsigned short port);
 // [socket_unpacksockaddr]: can be accessed without library initialization.
-LIBSOCKET_API bool LIBSOCKET_ABI socket_unpacksockaddr(const SocketAddressInterface *sockaddr, SocketAddressFamily af, IPAddressInterface *addr, unsigned short *port);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_unpacksockaddr(const SocketAddressInterface *sockaddr, SocketAddressFamily af, IPAddressInterface *addr, unsigned short *port);
 
 // [socket_getaddrinfo]: request can be NULL, and node OR service also can be NULL, but not both. see <netdb.h> getaddrinfo function documentation for more info.
-LIBSOCKET_API bool LIBSOCKET_ABI socket_getaddrinfo(const char *nodename, const char *servicename, const SocketDNSRequest *request, SocketDNSResponse **response);
-LIBSOCKET_API void LIBSOCKET_ABI socket_freeaddrinfo(SocketDNSResponse *response); // safe for NULL pointer.
-LIBSOCKET_API bool LIBSOCKET_ABI socket_getnameinfo(const SocketAddressInterface *sockaddr, socklen_t sockaddrlen, char *nodename, uint32_t nodenamesize, char *servicename, uint32_t servicenamesize, int flags);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getaddrinfo(const char *nodename, const char *servicename, const SocketDNSRequest *request, SocketDNSResponse **response);
+LIBSOCKET_API void LIBSOCKET_ABI socket_freeaddrinfo(SocketDNSResponse *response); // safe for NULL pointer and can be accessed without library initialization.
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getnameinfo(const SocketAddressInterface *sockaddr, socklen_t sockaddrlen, char *nodename, uint32_t nodenamesize, char *servicename, uint32_t servicenamesize, int flags);
 
-LIBSOCKET_API Socket * LIBSOCKET_ABI socket_open(SocketAddressFamily af, SocketType type, SocketProtocol protocol);
-LIBSOCKET_API bool LIBSOCKET_ABI socket_close(Socket *socket);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_open(Socket **socket, SocketAddressFamily af, SocketType type, SocketProtocol protocol);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_close(Socket *socket);
 
-LIBSOCKET_API bool LIBSOCKET_ABI socket_connect(const Socket *socket, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen);
-LIBSOCKET_API bool LIBSOCKET_ABI socket_bind(const Socket *socket, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_connect(const Socket *socket, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_bind(const Socket *socket, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen);
 
-LIBSOCKET_API bool LIBSOCKET_ABI socket_listen(const Socket *socket, int backlog);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_listen(const Socket *socket, int backlog);
 // [socket_accept]: sockaddr & sockaddrlen can be NULL. see <sys/socket.h> accept function documentation for more info.
-LIBSOCKET_API Socket * LIBSOCKET_ABI socket_accept(const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *sockaddrlen);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_accept(Socket **acceptedsocket, const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *sockaddrlen);
 
-LIBSOCKET_API ssize_t LIBSOCKET_ABI socket_recv(const Socket *socket, void *buffer, size_t len, int flags);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_recv(const Socket *socket, void *buffer, size_t len, ssize_t *processedbytes, int flags);
 // [socket_recvfrom]: sockaddr & sockaddrlen can be NULL. see <sys/socket.h> recvfrom function documentation for more info.
-LIBSOCKET_API ssize_t LIBSOCKET_ABI socket_recvfrom(const Socket *socket, void *buffer, size_t len, int flags, SocketAddressInterface *sockaddr, socklen_t *sockaddrlen);
-LIBSOCKET_API ssize_t LIBSOCKET_ABI socket_send(const Socket *socket, const void *data, size_t len, int flags);
-LIBSOCKET_API ssize_t LIBSOCKET_ABI socket_sendto(const Socket *socket, const void *buffer, size_t len, int flags, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_recvfrom(const Socket *socket, void *buffer, size_t len, ssize_t *processedbytes, int flags, SocketAddressInterface *sockaddr, socklen_t *sockaddrlen);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_send(const Socket *socket, const void *data, size_t len, ssize_t *processedbytes, int flags);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_sendto(const Socket *socket, const void *buffer, size_t len, ssize_t *processedbytes, int flags, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen);
 
-LIBSOCKET_API bool LIBSOCKET_ABI socket_ioctl(const Socket *socket, SocketIOCTLOption option, void *value);
-LIBSOCKET_API bool LIBSOCKET_ABI socket_shutdown(const Socket *socket, SocketShutdownMode mode);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_ioctl(const Socket *socket, SocketIOCTLOption option, void *value);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_shutdown(const Socket *socket, SocketShutdownFlags flags);
 
-LIBSOCKET_API bool LIBSOCKET_ABI socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, void *optval, socklen_t *optlen);
-LIBSOCKET_API bool LIBSOCKET_ABI socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, const void *optval, socklen_t optlen);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, void *optval, socklen_t *optlen);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, const void *optval, socklen_t optlen);
 
-LIBSOCKET_API SocketAddressFamily LIBSOCKET_ABI socket_getaf(const Socket *socket);
-LIBSOCKET_API SocketType LIBSOCKET_ABI socket_gettype(const Socket *socket);
-LIBSOCKET_API SocketProtocol LIBSOCKET_ABI socket_getprotocol(const Socket *socket);
+LIBSOCKET_API SocketAddressFamily LIBSOCKET_ABI socket_getaf(const Socket *socket); // can be accessed without library initialization.
+LIBSOCKET_API SocketType LIBSOCKET_ABI socket_gettype(const Socket *socket); // can be accessed without library initialization.
+LIBSOCKET_API SocketProtocol LIBSOCKET_ABI socket_getprotocol(const Socket *socket); // can be accessed without library initialization.
 
-LIBSOCKET_API bool LIBSOCKET_ABI socket_getpeername(const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *size);
-LIBSOCKET_API bool LIBSOCKET_ABI socket_getsockname(const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *size);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getpeername(const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *size);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getsockname(const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *size);
 
 #if defined(LIBSOCKET_ALLOWUNSAFEACCESS) || defined(LIBSOCKET_EXPORT)
     LIBSOCKET_API SOCKETDESCRIPTOR LIBSOCKET_ABI socket_gethandle(const Socket *socket); // can be accessed without library initialization.

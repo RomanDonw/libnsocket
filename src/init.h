@@ -5,8 +5,6 @@
 
 #include "err.h"
 
-extern bool inited; // !!! readonly !!!
-
-#define ENSURE_INIT(return_value_on_error) { if (!inited) RETURNWITHERROR(SocketError_NotInitialized, return_value_on_error); }
+#define ENSURE_INIT if (!socket_initialized()) return SocketError_NotInitialized
 
 #endif
