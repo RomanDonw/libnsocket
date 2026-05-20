@@ -93,4 +93,6 @@
 
 SocketError translateerror(int err);
 
+#define GETLASTTRANSLATEDSYSERR() (translateerror(GETLASTERROR()))
+
 #endif

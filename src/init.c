@@ -43,7 +43,7 @@ SocketError socket_cleanup(void)
     if (!inited) return SocketError_NotInitialized;
 
     #ifdef LIBSOCKET_OS_WINDOWS
-        if (WSACleanup()) return translateerror(GETLASTERROR());
+        if (WSACleanup()) return GETLASTTRANSLATEDSYSERR();
     #endif
     
     sockslist_removeall();

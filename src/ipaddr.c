@@ -16,7 +16,7 @@ SocketError socket_parseaddr(IPAddressInterface *addr, SocketAddressFamily af, c
     ENSURE_INIT;
     int ret = inet_pton(af, straddr, addr);
     if (ret == 0) return SocketError_ParsingAddressFailed;
-    if (ret == -1) return translateerror(GETLASTERROR());
+    if (ret == -1) return GETLASTTRANSLATEDSYSERR();
     return SocketError_Success;
 }
 

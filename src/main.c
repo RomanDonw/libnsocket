@@ -45,7 +45,7 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     ENSURE_INIT;
 
     SOCKETDESCRIPTOR desc = socket(af, type, protocol);
-    if (desc == INVALID_SOCKET) return translateerror(GETLASTERROR());
+    if (desc == INVALID_SOCKET) return GETLASTTRANSLATEDSYSERR();
 
     Socket *ret = libsocket_malloc(sizeof(Socket));
     if (!ret) return SocketError_MemoryAllocationFailed;
@@ -80,7 +80,7 @@ SocketError socket_close(Socket *socket)
 
     if (!sockslist_has(socket)) return SocketError_Fault;
 
-    if (CLOSESOCKET(socket->desc)) return translateerror(GETLASTERROR());
+    if (CLOSESOCKET(socket->desc)) return GETLASTTRANSLATEDSYSERR();
 
     sockslist_remove(socket);
     libsocket_free(socket);
@@ -90,21 +90,21 @@ SocketError socket_close(Socket *socket)
 SocketError socket_listen(const Socket *socket, int backlog)
 {
     ENSURE_INIT;
-    if (listen(socket->desc, backlog)) return translateerror(GETLASTERROR());
+    if (listen(socket->desc, backlog)) return GETLASTTRANSLATEDSYSERR();
     return SocketError_Success;
 }
 
 SocketError socket_connect(const Socket *socket, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen)
 {
     ENSURE_INIT;
-    if (connect(socket->desc, (struct sockaddr *)sockaddr, sockaddrlen)) return translateerror(GETLASTERROR());
+    if (connect(socket->desc, (struct sockaddr *)sockaddr, sockaddrlen)) return GETLASTTRANSLATEDSYSERR();
     return SocketError_Success;
 }
 
 SocketError socket_bind(const Socket *socket, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen)
 {
     ENSURE_INIT;
-    if (bind(socket->desc, (struct sockaddr *)sockaddr, sockaddrlen)) return translateerror(GETLASTERROR());
+    if (bind(socket->desc, (struct sockaddr *)sockaddr, sockaddrlen)) return GETLASTTRANSLATEDSYSERR();
     return SocketError_Success;
 }
 
@@ -113,7 +113,7 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
     ENSURE_INIT;
 
     SOCKETDESCRIPTOR desc = accept(socket->desc, sockaddr, sockaddrlen);
-    if (desc == INVALID_SOCKET) return translateerror(GETLASTERROR());
+    if (desc == INVALID_SOCKET) return GETLASTTRANSLATEDSYSERR();
 
     Socket *ret = libsocket_malloc(sizeof(Socket));
     if (!ret) return SocketError_MemoryAllocationFailed;
@@ -146,7 +146,7 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
     ENSURE_INIT;\
     ssize_t procbytes = func;\
     if (processedbytes) *processedbytes = procbytes;\
-    if (procbytes < 0) return translateerror(GETLASTERROR());\
+    if (procbytes < 0) return GETLASTTRANSLATEDSYSERR();\
     return SocketError_Success;
 
 SocketError socket_recv(const Socket *socket, void *buffer, size_t len, ssize_t *processedbytes, int flags)
@@ -177,13 +177,13 @@ SocketError socket_ioctl(const Socket *socket, SocketIOCTLOption option, void *v
         {
             #ifdef LIBSOCKET_OS_WINDOWS
                 unsigned long val = *(bool *)value;
-                if (IOCTLSOCKET(socket->desc, FIONBIO, &val)) return translateerror(GETLASTERROR());
+                if (IOCTLSOCKET(socket->desc, FIONBIO, &val)) return GETLASTTRANSLATEDSYSERR();
             #else
                 int flags = fcntl(socket->desc, F_GETFL, 0);
-                if (flags < 0) return translateerror(GETLASTERROR());
+                if (flags < 0) return GETLASTTRANSLATEDSYSERR();
 
-                if (*(bool *)value && fcntl(socket->desc, F_SETFL, flags | O_NONBLOCK) < 0) return translateerror(GETLASTERROR());
-                else if (!(*(bool *)value) && fcntl(socket->desc, F_SETFL, flags & (~O_NONBLOCK)) < 0) return translateerror(GETLASTERROR());
+                if (*(bool *)value && fcntl(socket->desc, F_SETFL, flags | O_NONBLOCK) < 0) return GETLASTTRANSLATEDSYSERR();
+                else if (!(*(bool *)value) && fcntl(socket->desc, F_SETFL, flags & (~O_NONBLOCK)) < 0) return GETLASTTRANSLATEDSYSERR();
             #endif
 
             return SocketError_Success;
@@ -196,7 +196,7 @@ SocketError socket_ioctl(const Socket *socket, SocketIOCTLOption option, void *v
             #else
                 int val;
             #endif
-            if (IOCTLSOCKET(socket->desc, FIONREAD, &val)) return translateerror(GETLASTERROR());
+            if (IOCTLSOCKET(socket->desc, FIONREAD, &val)) return GETLASTTRANSLATEDSYSERR();
             *(uint32_t *)value = val;
             return SocketError_Success;
         }
@@ -232,7 +232,7 @@ SocketError socket_shutdown(const Socket *socket, SocketShutdownFlags flags)
             break;
     }
 
-    if (shutdown(socket->desc, mode)) return translateerror(GETLASTERROR());
+    if (shutdown(socket->desc, mode)) return GETLASTTRANSLATEDSYSERR();
 
     return SocketError_Success;
 }
@@ -253,7 +253,7 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
 
             struct linger ling;
             socklen_t lingsz = sizeof(ling);
-            if (getsockopt(socket->desc, level, optname, (void *)&ling, &lingsz)) return translateerror(GETLASTERROR());
+            if (getsockopt(socket->desc, level, optname, (void *)&ling, &lingsz)) return GETLASTTRANSLATEDSYSERR();
             if (lingsz > sizeof(ling)) return SocketError_InternalUnknownError;
 
             SocketLingerOptions lingopts;
@@ -272,12 +272,12 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
             uint32_t millis;
             #ifdef LIBSOCKET_OS_WINDOWS
                 socklen_t millissz = sizeof(millis);
-                if (getsockopt(socket->desc, level, optname, (void *)&millis, &millissz)) return translateerror(GETLASTERROR());
+                if (getsockopt(socket->desc, level, optname, (void *)&millis, &millissz)) return GETLASTTRANSLATEDSYSERR();
                 if (millissz > sizeof(millis)) return SocketError_InternalUnknownError;
             #else
                 struct timeval tv;
                 socklen_t tvsz = sizeof(tv);
-                if (getsockopt(socket->desc, level, optname, (void *)&tv, &tvsz)) return translateerror(GETLASTERROR());
+                if (getsockopt(socket->desc, level, optname, (void *)&tv, &tvsz)) return GETLASTTRANSLATEDSYSERR();
                 if (tvsz > sizeof(tv)) return SocketError_InternalUnknownError;
 
                 uint64_t usecs;
@@ -300,7 +300,7 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
             return SocketError_Success;
 
         default:
-            if (getsockopt(socket->desc, level, optname, optval, optlen)) return translateerror(GETLASTERROR());
+            if (getsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
             return SocketError_Success;
     }
 }
@@ -321,7 +321,7 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
             struct linger ling;
             ling.l_onoff = lingopts->enable;
             ling.l_linger = lingopts->linger;
-            if (setsockopt(socket->desc, level, SocketOptionName_Socket_Linger, (void *)&ling, sizeof(ling))) return translateerror(GETLASTERROR());
+            if (setsockopt(socket->desc, level, SocketOptionName_Socket_Linger, (void *)&ling, sizeof(ling))) return GETLASTTRANSLATEDSYSERR();
             return SocketError_Success;
 
         case SocketOptionName_Socket_RecvTimeout:;
@@ -344,11 +344,11 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
                 const socklen_t size = sizeof(tv);
             #endif
 
-            if (setsockopt(socket->desc, level, optname, data, size)) return translateerror(GETLASTERROR());
+            if (setsockopt(socket->desc, level, optname, data, size)) return GETLASTTRANSLATEDSYSERR();
             return SocketError_Success;
 
         default:
-            if (setsockopt(socket->desc, level, optname, optval, optlen)) return translateerror(GETLASTERROR());
+            if (setsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
             return SocketError_Success;
     }
 }
@@ -356,14 +356,14 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
 SocketError socket_getpeername(const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *size)
 {
     ENSURE_INIT;
-    if (getpeername(socket->desc, (struct sockaddr *)sockaddr, size)) return translateerror(GETLASTERROR());
+    if (getpeername(socket->desc, (struct sockaddr *)sockaddr, size)) return GETLASTTRANSLATEDSYSERR();
     return SocketError_Success;
 }
 
 SocketError socket_getsockname(const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *size)
 {
     ENSURE_INIT;
-    if (getsockname(socket->desc, (struct sockaddr *)sockaddr, size)) return translateerror(GETLASTERROR());
+    if (getsockname(socket->desc, (struct sockaddr *)sockaddr, size)) return GETLASTTRANSLATEDSYSERR();
     return SocketError_Success;
 }
 
