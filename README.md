@@ -63,7 +63,7 @@ Also just run `sudo make install`. Library will be installed to your system.
 
 <!-- ========================================================================================================================================================== -->
 
-## Using in project
+## Usage in project
 
 ### Manual linking
 > [!WARNING]
