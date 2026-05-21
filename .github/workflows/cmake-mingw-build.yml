@@ -27,7 +27,7 @@ jobs:
       - name: Setup dependencies
         shell: msys2 {0}
         run: |
-            cd dependencies/libmutex
+            ls
 
             mkdir build
             cd build
