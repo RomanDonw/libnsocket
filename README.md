@@ -1,4 +1,5 @@
-# Universal cross-platform C99/C++ sockets library.
+# Universal cross-platform C99\*/C++ sockets library.
+\*this library has C99 API, but implementation wrote on C11.
 
 <!-- ========================================================================================================================================================== -->
 
