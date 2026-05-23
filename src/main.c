@@ -54,7 +54,7 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     if (desc == INVALID_SOCKET) return GETLASTTRANSLATEDSYSERR();
 
     Socket *ret = libsocket_malloc(sizeof(Socket));
-    if (!ret) return SocketError_MemoryAllocationFailed;
+    if (!ret) { CLOSESOCKET(desc); return SocketError_MemoryAllocationFailed; }
     ret->af = af;
     ret->type = type;
     ret->protocol = protocol;
@@ -122,7 +122,7 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
     if (desc == INVALID_SOCKET) return GETLASTTRANSLATEDSYSERR();
 
     Socket *ret = libsocket_malloc(sizeof(Socket));
-    if (!ret) return SocketError_MemoryAllocationFailed;
+    if (!ret) { CLOSESOCKET(desc); return SocketError_MemoryAllocationFailed; }
     ret->af = socket->af;
     ret->type = socket->type;
     ret->protocol = socket->protocol;
