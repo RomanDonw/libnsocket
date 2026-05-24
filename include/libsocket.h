@@ -133,10 +133,16 @@ enum SocketProtocol
     SocketProtocol_UDP = IPPROTO_UDP
 } typedef SocketProtocol;
 
+/*
+        R/O - readonly.
+        W/O - writeonly.
+        R/W - readable/writeable.
+    */
+
 enum SocketIOCTLOption
 {
-    SocketIOCTLOption_NonBlockingIO, // bool, writeonly.
-    SocketIOCTLOption_AvailableDataToRead // uint32_t, readonly.
+    SocketIOCTLOption_NonBlockingIO, // bool, W/O.
+    SocketIOCTLOption_AvailableDataToRead // uint32_t, R/O.
 } typedef SocketIOCTLOption;
 
 enum SocketOptionLevel
@@ -145,24 +151,48 @@ enum SocketOptionLevel
     SocketOptionLevel_TCP = IPPROTO_TCP
 } typedef SocketOptionLevel;
 
+/*
 enum SocketOptionName
 {
     // Socket level.
-    SocketOptionName_Socket_RecvBufferSize = SO_RCVBUF, // int, readable/writable.
-    SocketOptionName_Socket_SendBufferSize = SO_SNDBUF, // int, readable/writable.
-    SocketOptionName_Socket_KeepAliveConnection = SO_KEEPALIVE, // bool, readable/writable.
-    SocketOptionName_Socket_AcceptConnections = SO_ACCEPTCONN, // bool, readonly.
-    SocketOptionName_Socket_InternalError = SO_ERROR, // int, readonly.
-    SocketOptionName_Socket_AllowReuseAddress = SO_REUSEADDR, // bool, readable/writable.
-    SocketOptionName_Socket_Broadcast = SO_BROADCAST, // bool, readable/writable.
-    SocketOptionName_Socket_Linger = SO_LINGER, // struct SocketLingerOptions, readable/writable.
-    SocketOptionName_Socket_RecvTimeout = SO_RCVTIMEO, // uint32_t (milliseconds), readable/writable.
-    SocketOptionName_Socket_SendTimeout = SO_SNDTIMEO, // uint32_t (milliseconds), readable/writable.
+    SocketOptionName_Socket_RecvBufferSize = SO_RCVBUF, // int, R/W.
+    SocketOptionName_Socket_SendBufferSize = SO_SNDBUF, // int, R/W.
+    SocketOptionName_Socket_KeepAliveConnection = SO_KEEPALIVE, // bool, R/W.
+    SocketOptionName_Socket_AcceptConnections = SO_ACCEPTCONN, // bool, R/O.
+    SocketOptionName_Socket_InternalError = SO_ERROR, // int, R/O.
+    SocketOptionName_Socket_AllowReuseAddress = SO_REUSEADDR, // bool, R/W.
+    SocketOptionName_Socket_Broadcast = SO_BROADCAST, // bool, R/W.
+    SocketOptionName_Socket_Linger = SO_LINGER, // struct SocketLingerOptions, R/W.
+    SocketOptionName_Socket_RecvTimeout = SO_RCVTIMEO, // uint32_t (milliseconds), R/W.
+    SocketOptionName_Socket_SendTimeout = SO_SNDTIMEO, // uint32_t (milliseconds), R/W.
 
     // TCP level.
-    SocketOptionName_TCP_DisableDelay = TCP_NODELAY, // bool, readable/writable.
-    SocketOptionName_TCP_MaximumDataSegmentSize = TCP_MAXSEG, // int, readable/writable.
+    SocketOptionName_TCP_NoDelay = TCP_NODELAY, // bool, R/W.
+    SocketOptionName_TCP_MaxDataSegmentSize = TCP_MAXSEG, // int, R/W.
+    SocketOptionName_TCP_MaxKeepAliveProbes = TCP_KEEPCNT, // int, R/W.
+    SocketOptionName_TCP_KeepAliveProbesInterval = TCP_KEEPINTVL, // int (seconds), R/W.
+    SocketOptionName_TCP_ConnectionKeepIdleTime = TCP_KEEPIDLE, // int (seconds), R/W.
 } typedef SocketOptionName;
+*/
+
+#define SOCKOPT_SOCKET_RECVBUFFSIZE SO_RCVBUF // int, R/W.
+#define SOCKOPT_SOCKET_SENDBUFFSIZE SO_SNDBUF // int, R/W.
+#define SOCKOPT_SOCKET_KEEPALIVECONN SO_KEEPALIVE // bool, R/W.
+#define SOCKOPT_SOCKET_ACCEPTCONNS SO_ACCEPTCONN // bool, R/O.
+#define SOCKOPT_SOCKET_INTERNALERROR SO_ERROR // int, R/O.
+#define SOCKOPT_SOCKET_ALLOWREUSEADDR SO_REUSEADDR // bool, R/W.
+#define SOCKOPT_SOCKET_BROADCAST SO_BROADCAST // bool, R/W.
+#define SOCKOPT_SOCKET_LINGER SO_LINGER // bool, R/W.
+#define SOCKOPT_SOCKET_RECVTIMEOUT SO_RCVTIMEO // uint32_t (milliseconds), R/W.
+#define SOCKOPT_SOCKET_SENDTIMEOUT SO_SNDTIMEO // uint32_t (milliseconds), R/W.
+
+#define SOCKOPT_TCP_NODELAY TCP_NODELAY
+#define SOCKOPT_TCP_MAXDATASEGSIZE TCP_MAXSEG
+#define SOCKOPT_TCP_MAXKEEPALIVEPROBES TCP_KEEPCNT
+#define SOCKOPT_TCP_KEEPALIVEPROBESINTERVAL TCP_KEEPINTVL
+#define SOCKOPT_TCP_CONNKEEPIDLETIME TCP_KEEPIDLE
+
+typedef int SocketOptionName;
 
 enum SocketError
 {

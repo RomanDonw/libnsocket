@@ -18,7 +18,7 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
         case SocketOptionName_Socket_KeepAliveConnection:
         case SocketOptionName_Socket_AllowReuseAddress:
         case SocketOptionName_Socket_Broadcast:
-        case SocketOptionName_TCP_DisableDelay:
+        case SocketOptionName_TCP_NoDelay:
         case SocketOptionName_Socket_AcceptConnections:
         {
             #ifdef LIBSOCKET_OS_WINDOWS
@@ -86,9 +86,32 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
             return SocketError_Success;
         }
 
-        default:
-            if (getsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
+        case SocketOptionName_TCP_MaxDataSegmentSize:
+        case SocketOptionName_TCP_MaxKeepAliveProbes:
+        case SocketOptionName_TCP_KeepAliveProbesInterval:
+        case SocketOptionName_TCP_ConnectionKeepIdleTime:
+        case SocketOptionName_Socket_RecvBufferSize:
+        case SocketOptionName_Socket_SendBufferSize:
+        case SocketOptionName_Socket_InternalError:
+        {
+            #ifdef LIBSOCKET_OS_WINDOWS
+                int val;
+                socklen_t valsz = sizeof(val);
+                if (getsockopt(socket->desc, level, optname, (void *)&val, &valsz)) return GETLASTTRANSLATEDSYSERR();
+                if (valsz != sizeof(val)) return SocketError_InternalUnknownError;
+
+                if (*optlen > 0) memcpy(optval, &val, (*optlen > sizeof(val)) ? sizeof(val) : *optlen);
+                *optlen = sizeof(val);
+            #else
+                if (getsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
+            #endif
             return SocketError_Success;
+        }
+
+        default:
+            //if (getsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
+            //return SocketError_Success;
+            return SocketError_IncorrectArgumentValue;
     }
 }
 
@@ -104,7 +127,8 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
         case SocketOptionName_Socket_KeepAliveConnection:
         case SocketOptionName_Socket_AllowReuseAddress:
         case SocketOptionName_Socket_Broadcast:
-        case SocketOptionName_TCP_DisableDelay:
+        case SocketOptionName_TCP_NoDelay:
+        {
             if (optlen < sizeof(bool)) return SocketError_IncorrectArgumentValue;
 
             #ifdef LIBSOCKET_OS_WINDOWS
@@ -115,8 +139,10 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
 
             if (setsockopt(socket->desc, level, optname, (void *)&val, sizeof(val))) return GETLASTTRANSLATEDSYSERR();
             return SocketError_Success;
+        }
 
-        case SocketOptionName_Socket_Linger:;
+        case SocketOptionName_Socket_Linger:
+        {
             // this can do setsockopt -> if (level != SocketLevel) { SETLASTERROR(SOCKERR_NOPROTOOPT); return false; }
             if (optlen < sizeof(SocketLingerOptions)) return SocketError_IncorrectArgumentValue;
 
@@ -127,9 +153,11 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
             ling.l_linger = lingopts->linger;
             if (setsockopt(socket->desc, level, optname, (void *)&ling, sizeof(ling))) return GETLASTTRANSLATEDSYSERR();
             return SocketError_Success;
+        }
 
         case SocketOptionName_Socket_RecvTimeout:;
         case SocketOptionName_Socket_SendTimeout:;
+        {
             // this can do setsockopt -> if (level != SocketLevel) { SETLASTERROR(SOCKERR_NOPROTOOPT); return false; }
             if (optlen < sizeof(uint32_t)) return SocketError_IncorrectArgumentValue;
 
@@ -149,9 +177,30 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
 
             if (setsockopt(socket->desc, level, optname, data, size)) return GETLASTTRANSLATEDSYSERR();
             return SocketError_Success;
+        }
 
-        default:
+        case SocketOptionName_TCP_MaxDataSegmentSize:
+        case SocketOptionName_TCP_MaxKeepAliveProbes:
+        case SocketOptionName_TCP_KeepAliveProbesInterval:
+        case SocketOptionName_TCP_ConnectionKeepIdleTime:
+        case SocketOptionName_Socket_RecvBufferSize:
+        case SocketOptionName_Socket_SendBufferSize:
+        {
+            if (optlen < sizeof(int)) return SocketError_IncorrectArgumentValue;
+
+            #ifdef LIBSOCKET_OS_WINDOWS
+                DWORD val = *(int *)optval;
+                optval = &val;
+                optlen = sizeof(val);
+            #endif
+
             if (setsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
             return SocketError_Success;
+        }
+
+        default:
+            //if (setsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
+            //return SocketError_Success;
+            return SocketError_IncorrectArgumentValue;
     }
 }
