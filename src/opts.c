@@ -10,6 +10,8 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
 {
     ENSURE_INIT;
 
+    if (!optval) return SocketError_Fault;
+
     switch (optname)
     {
         // bools.
@@ -36,9 +38,6 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
 
         case SocketOptionName_Socket_Linger:
         {
-            // this can do getsockopt -> if (level != SocketLevel) { SETLASTERROR(SOCKERR_NOPROTOOPT); return false; }
-            if (!optval) return SocketError_Fault;
-
             struct linger ling;
             socklen_t lingsz = sizeof(ling);
             if (getsockopt(socket->desc, level, optname, (void *)&ling, &lingsz)) return GETLASTTRANSLATEDSYSERR();
@@ -56,9 +55,6 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
         case SocketOptionName_Socket_RecvTimeout:
         case SocketOptionName_Socket_SendTimeout:
         {
-            // this can do getsockopt -> if (level != SocketLevel) { SETLASTERROR(SOCKERR_NOPROTOOPT); return false; }
-            if (!optval) return SocketError_Fault;
-
             uint32_t millis;
             #ifdef LIBSOCKET_OS_WINDOWS
                 socklen_t millissz = sizeof(millis);
