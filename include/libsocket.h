@@ -197,6 +197,8 @@ enum SocketError
     SocketError_UnsupportedAddressFamily, // EAFNOSUPPORT
     SocketError_UnsupportedProtocol, // EPROTONOSUPPORT
     SocketError_UnsupportedSocketType, // ESOCKTNOSUPPORT
+    SocketError_UnsupportedProtocolOption, // ENOPROTOOPT
+    SocketError_UnsupportedOperation, // EOPNOTSUPP
     SocketError_AddressInUse, // EADDRINUSE
     SocketError_AddressNotAvailable, // EADDRNOTAVAIL
     SocketError_NetworkUnreachable, // ENETUNREACH
@@ -210,8 +212,6 @@ enum SocketError
     SocketError_AlreadyConnected, // EISCONN
     SocketError_InvalidDescriptor, // EBADF
     SocketError_NoSpaceLeft, // ENOSPC
-    SocketError_ProtocolOptionUnsupported, // ENOPROTOOPT
-    SocketError_OperationNotSupported, // EOPNOTSUPP
     SocketError_SystemBufferOverflowed, // ENOBUFS
     SocketError_CannotTranslateName, // ELOOP
     SocketError_DestinationAddressRequired, // EDESTADDRREQ

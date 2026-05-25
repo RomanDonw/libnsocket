@@ -83,10 +83,10 @@ SocketError translateerror(int err)
 	        return SocketError_OperationInProgress;
 
         case SOCKERR_NOPROTOOPT:
-            return SocketError_ProtocolOptionUnsupported;
+            return SocketError_UnsupportedProtocolOption;
 
         case SOCKERR_OPNOTSUPP:
-            return SocketError_OperationNotSupported;
+            return SocketError_UnsupportedOperation;
 
         case SOCKERR_NOBUFFS:
             return SocketError_SystemBufferOverflowed;

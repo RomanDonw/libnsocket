@@ -69,6 +69,12 @@ const char *socket_strerror(SocketError errcode)
         case SocketError_UnsupportedSocketType:
             return "unsupported socket type";
 
+        case SocketError_UnsupportedProtocolOption:
+            return "unsupported protocol option";
+
+        case SocketError_UnsupportedOperation:
+            return "unsupported operation";
+
         case SocketError_AddressInUse:
             return "address already in use";
 
@@ -101,12 +107,6 @@ const char *socket_strerror(SocketError errcode)
 
         case SocketError_NoSpaceLeft:
             return "no space left";
-
-        case SocketError_ProtocolOptionUnsupported:
-            return "protocol option unsupported";
-
-        case SocketError_OperationNotSupported:
-            return "operation not supported";
 
         case SocketError_SystemBufferOverflowed:
             return "system buffer overflowed";
