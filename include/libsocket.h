@@ -137,7 +137,7 @@ enum SocketProtocol
         R/O - readonly.
         W/O - writeonly.
         R/W - readable/writeable.
-    */
+*/
 
 enum SocketIOCTLOption
 {
@@ -173,27 +173,6 @@ enum SocketOptionName
     SocketOptionName_TCP_KeepAliveProbesInterval = TCP_KEEPINTVL, // int (seconds), R/W.
     SocketOptionName_TCP_ConnectionKeepIdleTime = TCP_KEEPIDLE, // int (seconds), R/W.
 } typedef SocketOptionName;
-
-/*
-#define SOCKOPT_SOCK_RECVBUFFSIZE SO_RCVBUF // int, R/W.
-#define SOCKOPT_SOCK_SENDBUFFSIZE SO_SNDBUF // int, R/W.
-#define SOCKOPT_SOCK_KEEPALIVECONN SO_KEEPALIVE // bool, R/W.
-#define SOCKOPT_SOCK_ACCEPTCONNS SO_ACCEPTCONN // bool, R/O.
-#define SOCKOPT_SOCK_INTERNALERROR SO_ERROR // int, R/O.
-#define SOCKOPT_SOCK_ALLOWREUSEADDR SO_REUSEADDR // bool, R/W.
-#define SOCKOPT_SOCK_BROADCAST SO_BROADCAST // bool, R/W.
-#define SOCKOPT_SOCK_LINGER SO_LINGER // (struct) SocketLingerOptions, R/W.
-#define SOCKOPT_SOCK_RECVTIMEOUT SO_RCVTIMEO // uint32_t (milliseconds), R/W.
-#define SOCKOPT_SOCK_SENDTIMEOUT SO_SNDTIMEO // uint32_t (milliseconds), R/W.
-
-#define SOCKOPT_TCP_NODELAY TCP_NODELAY // bool, R/W.
-#define SOCKOPT_TCP_MAXDATASEGSIZE TCP_MAXSEG // int, R/W.
-#define SOCKOPT_TCP_MAXKEEPALIVEPROBES TCP_KEEPCNT // int, R/W.
-#define SOCKOPT_TCP_KEEPALIVEPROBESINTERVAL TCP_KEEPINTVL // int (seconds), R/W.
-#define SOCKOPT_TCP_CONNKEEPIDLETIME TCP_KEEPIDLE // int (seconds), R/W.
-
-typedef int SocketOptionName;
-*/
 
 enum SocketError
 {

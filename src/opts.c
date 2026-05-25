@@ -1,3 +1,9 @@
+/*
+    This Source Code Form is subject to the terms of the Mozilla Public
+    License, v. 2.0. If a copy of the MPL was not distributed with this
+    file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*/
+
 #include "libsocket.h"
 
 #include <string.h>
@@ -95,8 +101,6 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
             break;
 
         default:
-            //if (getsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
-            //return SocketError_Success;
             return SocketError_IncorrectArgumentValue;
     }
 
@@ -161,7 +165,6 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
 
                 case SocketOptionName_Socket_Linger:
                 {
-                    // this can do setsockopt -> if (level != SocketLevel) { SETLASTERROR(SOCKERR_NOPROTOOPT); return false; }
                     if (optlen < sizeof(SocketLingerOptions)) return SocketError_IncorrectArgumentValue;
 
                     const SocketLingerOptions *lingopts = optval;
@@ -176,7 +179,6 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
                 case SocketOptionName_Socket_RecvTimeout:;
                 case SocketOptionName_Socket_SendTimeout:;
                 {
-                    // this can do setsockopt -> if (level != SocketLevel) { SETLASTERROR(SOCKERR_NOPROTOOPT); return false; }
                     if (optlen < sizeof(uint32_t)) return SocketError_IncorrectArgumentValue;
 
                     #ifdef LIBSOCKET_OS_WINDOWS
@@ -196,10 +198,6 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
                     if (setsockopt(socket->desc, level, optname, data, size)) return GETLASTTRANSLATEDSYSERR();
                     return SocketError_Success;
                 }
-
-                //default:
-                    //if (setsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
-                    //return SocketError_Success;  
             }
             break;
 
