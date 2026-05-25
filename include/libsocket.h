@@ -148,9 +148,9 @@ enum SocketIOCTLOption
 enum SocketOptionLevel
 {
     SocketOptionLevel_Socket = SOL_SOCKET,
-    SocketOptionLevel_TCP = IPPROTO_TCP
+    SocketOptionLevel_IP = IPPROTO_IP,
+    SocketOptionLevel_TCP = IPPROTO_TCP,
 } typedef SocketOptionLevel;
-
 
 enum SocketOptionName
 {
@@ -166,6 +166,9 @@ enum SocketOptionName
     SocketOptionName_Socket_RecvTimeout = SO_RCVTIMEO, // uint32_t (milliseconds), R/W.
     SocketOptionName_Socket_SendTimeout = SO_SNDTIMEO, // uint32_t (milliseconds), R/W.
     SocketOptionName_Socket_Type = SO_TYPE, // int (enum SocketType), R/O.
+
+    // IP level.
+    SocketOptionName_IP_TimeToLive = IP_TTL, // uint8_t, R/W.
 
     // TCP level.
     SocketOptionName_TCP_NoDelay = TCP_NODELAY, // bool, R/W.

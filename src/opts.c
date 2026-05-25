@@ -221,6 +221,16 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
             }
             break;
 
+        case SocketOptionLevel_IP:
+            {
+                switch (optname)
+                {
+                    case SocketOptionName_IP_TimeToLive:
+                        goto handleuint8;
+                }
+            }
+            break;
+
         default:
             return SocketError_IncorrectArgumentValue;
     }
@@ -229,31 +239,48 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
 
     // =============================================================================
 
-    handlebool:
     {
-        if (optlen < sizeof(bool)) return SocketError_IncorrectArgumentValue;
-
         #ifdef LIBSOCKET_OS_WINDOWS
-            DWORD val = (*(bool *)optval) ? TRUE : FALSE;
+            DWORD val_dwint;
         #else
-            int val = *(bool *)optval;
+            int val_dwint;
         #endif
 
-        if (setsockopt(socket->desc, level, optname, (void *)&val, sizeof(val))) return GETLASTTRANSLATEDSYSERR();
+        handlebool:
+            if (optlen < sizeof(bool)) return SocketError_IncorrectArgumentValue;
+            #ifdef LIBSOCKET_OS_WINDOWS
+                val_dwint = (*(bool *)optval) ? TRUE : FALSE;
+            #else
+                val_dwint = (*(bool *)optval) ? true : false;
+            #endif
+        goto load_dwint;
+
+        handleint:
+            if (optlen < sizeof(int)) return SocketError_IncorrectArgumentValue;
+            /*
+            #ifdef LIBSOCKET_OS_WINDOWS
+                val_dwint = (*(int *)optval > INT_MAX) ? INT_MAX : *(int *)optval;
+            #else
+                val_dwint = *(int *)optval;
+            #endif
+            */
+            #ifdef LIBSOCKET_OS_WINDOWS
+                val_dwint = *(int *)optval;
+                goto load_dwint;
+            #else
+                goto processopt;
+            #endif
+
+        handleuint8:
+            if (optlen < sizeof(uint8_t)) return SocketError_IncorrectArgumentValue;
+            val_dwint = *(uint8_t *)optval;
+        goto load_dwint;
+
+        load_dwint:
+            optval = &val_dwint;
+            optlen = sizeof(val_dwint);
+        processopt:
+            if (setsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
+        return SocketError_Success;
     }
-    return SocketError_Success;
-
-    handleint:
-    {
-        if (optlen < sizeof(int)) return SocketError_IncorrectArgumentValue;
-
-        #ifdef LIBSOCKET_OS_WINDOWS
-            DWORD val = *(int *)optval;
-            optval = &val;
-            optlen = sizeof(val);
-        #endif
-
-        if (setsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
-    }
-    return SocketError_Success;
 }
