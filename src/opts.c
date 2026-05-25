@@ -148,6 +148,10 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
         case SocketOptionLevel_Socket:
             switch (optname)
             {
+                case SocketOptionName_Socket_AcceptConnections:
+                case SocketOptionName_Socket_InternalError:
+                    return SocketError_UnsupportedOperation;
+
                 case SocketOptionName_Socket_KeepAliveConnection:
                 case SocketOptionName_Socket_AllowReuseAddress:
                 case SocketOptionName_Socket_Broadcast:
