@@ -257,13 +257,6 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
 
         handleint:
             if (optlen < sizeof(int)) return SocketError_IncorrectArgumentValue;
-            /*
-            #ifdef LIBSOCKET_OS_WINDOWS
-                val_dwint = (*(int *)optval > INT_MAX) ? INT_MAX : *(int *)optval;
-            #else
-                val_dwint = *(int *)optval;
-            #endif
-            */
             #ifdef LIBSOCKET_OS_WINDOWS
                 val_dwint = *(int *)optval;
                 goto load_dwint;
