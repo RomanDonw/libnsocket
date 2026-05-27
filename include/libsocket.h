@@ -260,7 +260,7 @@ struct SocketStartupOptions
 #define SOCKET_AI_FLAG_NUMERICSERV AI_NUMERICSERV
 #define SOCKET_AI_FLAG_ADDRCONFIG AI_ADDRCONFIG
 #define SOCKET_AI_FLAG_IPV4MAPPED AI_V4MAPPED
-#define SOCKET_AI_FLAG_ALL AI_ALL
+#define SOCKET_AI_FLAG_BOTHIPVERS AI_ALL
 
 // flags for socket_getnameinfo.
 #define SOCKET_NI_NOFLAGS 0
@@ -273,12 +273,10 @@ struct SocketStartupOptions
 #define SOCKET_NI_HOSTMAXSTRSIZE NI_MAXHOST
 #define SOCKET_NI_SERVMAXSTRSIZE NI_MAXSERV
 
-// flags for socket_shutdown.
+// flags & type definitions for socket_shutdown.
 typedef unsigned char SocketShutdownFlags;
-#define SOCKET_SD_NOFLAGS 0b0 // 00b
 #define SOCKET_SD_FLAG_RECV 0b01 // 01b
 #define SOCKET_SD_FLAG_SEND 0b10 // 10b
-#define SOCKET_SD_ALLFLAGS 0b11 // 11b
 
 typedef struct Socket Socket;
 

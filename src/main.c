@@ -207,7 +207,7 @@ SocketError socket_shutdown(const Socket *socket, SocketShutdownFlags flags)
     ENSURE_INIT;
 
     int mode = 0;
-    switch (flags & SOCKET_SD_ALLFLAGS)
+    switch (flags & 0b11)
     {
         case 0b11:
             mode = SHUT_RDWR;
