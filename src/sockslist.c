@@ -71,9 +71,11 @@ SocketsListError sockslist_remove(Socket *socket)
     return SocketsListError_Success;
 }
 
-void sockslist_removeall(void)
+void sockslist_removeall(bool closesocks)
 {
     mutex_lock(sockslist_mutex);
+
+    if (closesocks) for (size_t i = 0; i < sockets_count; i++) socket_close(sockets[i]);
 
     libsocket_free(sockets);
     sockets = NULL;

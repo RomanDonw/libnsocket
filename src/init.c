@@ -63,9 +63,12 @@ SocketError socket_cleanup(void)
             atomic_flag_clear(&initfuncsbusyflag);
             return GETLASTTRANSLATEDSYSERR();
         }
+
+        sockslist_removeall(false);
+    #else
+        sockslist_removeall(true);
     #endif
     
-    sockslist_removeall();
     mutex_destroy(sockslist_mutex);
 
     atomic_store(&inited, false);

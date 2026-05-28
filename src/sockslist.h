@@ -25,6 +25,6 @@ extern mutex_t *sockslist_mutex; // recursive mutex.
 bool sockslist_has(Socket *socket);
 SocketsListError sockslist_add(Socket *socket);
 SocketsListError sockslist_remove(Socket *socket);
-void sockslist_removeall(void);
+void sockslist_removeall(bool closesocks);
 
 #endif
