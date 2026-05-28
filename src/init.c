@@ -37,7 +37,12 @@ SocketError socket_startup(const SocketAllocators *allocators, const SocketStart
     // =============================================================================
 
     if (mutex_init(&sockslist_mutex) != MUTEXERROR_SUCCESS)
-    { atomic_flag_clear(&initfuncsbusyflag); return SocketError_InitializationError; }
+    {
+        memset(&allocs, 0, sizeof(allocs));
+
+        atomic_flag_clear(&initfuncsbusyflag);
+        return SocketError_InitializationError;
+    }
 
     #ifdef LIBSOCKET_OS_WINDOWS
         static const SocketStartupOptions defaultopts =
@@ -49,11 +54,19 @@ SocketError socket_startup(const SocketAllocators *allocators, const SocketStart
 
         WSADATA data;
         int err = WSAStartup(options->winsock_version, &data);
-        if (err) { atomic_flag_clear(&initfuncsbusyflag); return translateerror(err); }
+        if (err)
+        {
+            memset(&allocs, 0, sizeof(allocs));
+            
+            atomic_flag_clear(&initfuncsbusyflag); 
+            return translateerror(err);
+        }
 
         if (data.wVersion != options->winsock_version)
         {
             WSACleanup();
+
+            memset(&allocs, 0, sizeof(allocs));
             
             atomic_flag_clear(&initfuncsbusyflag);
             return SocketError_WSAVersionsNotMatch;
