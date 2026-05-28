@@ -58,8 +58,7 @@
         #endif
     #endif
 
-    #define LIBSOCKET_WINSOCK_DEFAULT_VERSION_HIGH 2
-    #define LIBSOCKET_WINSOCK_DEFAULT_VERSION_LOW 2
+    #define LIBSOCKET_WINSOCK_DEFAULT_VERSION MAKEWORD(2, 2)
 
     typedef SSIZE_T ssize_t;
     typedef SOCKET SOCKETDESCRIPTOR;
@@ -240,11 +239,6 @@ struct SocketLingerOptions
     unsigned short linger; // in seconds.
 } typedef SocketLingerOptions;
 
-struct SocketStartupOptions
-{
-    unsigned short winsock_version;
-} typedef SocketStartupOptions;
-
 #define SOCKET_RECV_NOFLAGS 0
 #define SOCKET_RECV_FLAG_PEEK MSG_PEEK
 #define SOCKET_RECV_FLAG_WAITALL MSG_WAITALL
@@ -327,15 +321,23 @@ struct SocketDNSResponse
 
 #undef LIBSOCKET_SOCKETDNSBASE
 
-LIBSOCKET_API extern void *(*libsocket_malloc)(size_t); // = malloc from stdlib.h by default.
-LIBSOCKET_API extern void *(*libsocket_realloc)(void *, size_t); // = realloc from stdlib.h by default.
-LIBSOCKET_API extern void (*libsocket_free)(void *); // = free from stdlib.h by default.
+struct SocketStartupOptions
+{
+    unsigned short winsock_version;
+} typedef SocketStartupOptions;
+
+struct SocketAllocators
+{
+    void *(*malloc)(size_t);
+    void *(*realloc)(void *, size_t);
+    void (*free)(void *);
+} typedef SocketAllocators;
 
 LIBSOCKET_API const char * LIBSOCKET_ABI socket_strerror(SocketError errcode); // can be accessed without library initialization.
 
 LIBSOCKET_API bool LIBSOCKET_ABI socket_initialized(void); // can be accessed without library initialization.
-// [socket_startup]: this function is NOT THREAD-SAFE.
-LIBSOCKET_API SocketError LIBSOCKET_ABI socket_startup(const SocketStartupOptions *options); // options can be NULL.
+// [socket_startup]: this function is NOT THREAD-SAFE, options & allocators can be NULL.
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_startup(const SocketAllocators *allocators, const SocketStartupOptions *options);
 // [socket_cleanup]: this function is NOT THREAD-SAFE.
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_cleanup(void);
 

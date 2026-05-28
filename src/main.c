@@ -37,7 +37,7 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     SOCKETDESCRIPTOR desc = socket(af, type, protocol);
     if (desc == INVALID_SOCKET) return GETLASTTRANSLATEDSYSERR();
 
-    Socket *ret = libsocket_malloc(sizeof(Socket));
+    Socket *ret = allocs.malloc(sizeof(Socket));
     if (!ret) { CLOSESOCKET(desc); return SocketError_MemoryAllocationFailed; }
     ret->af = af;
     ret->type = type;
@@ -48,7 +48,7 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     if (err != SocketsListError_Success)
     {
         CLOSESOCKET(desc);
-        libsocket_free(ret);
+        allocs.free(ret);
 
         switch (err)
         {
@@ -73,7 +73,7 @@ SocketError socket_close(Socket *socket)
     if (CLOSESOCKET(socket->desc)) return GETLASTTRANSLATEDSYSERR();
 
     sockslist_remove(socket);
-    libsocket_free(socket);
+    allocs.free(socket);
     return SocketError_Success;
 }
 
@@ -105,7 +105,7 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
     SOCKETDESCRIPTOR desc = accept(socket->desc, sockaddr, sockaddrlen);
     if (desc == INVALID_SOCKET) return GETLASTTRANSLATEDSYSERR();
 
-    Socket *ret = libsocket_malloc(sizeof(Socket));
+    Socket *ret = allocs.malloc(sizeof(Socket));
     if (!ret) { CLOSESOCKET(desc); return SocketError_MemoryAllocationFailed; }
     ret->af = socket->af;
     ret->type = socket->type;
@@ -116,7 +116,7 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
     if (err != SocketsListError_Success)
     {
         CLOSESOCKET(desc);
-        libsocket_free(ret);
+        allocs.free(ret);
 
         switch (err)
         {

@@ -8,20 +8,31 @@
 #include "init.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdatomic.h>
+#include <string.h>
 
 #include "err.h"
 #include "sockslist.h"
+#include "util.h"
 
 static atomic_bool inited = ATOMIC_VAR_INIT(false);
 static atomic_flag initfuncsbusyflag = ATOMIC_FLAG_INIT;
 
 bool socket_initialized(void) { return atomic_load(&inited); }
 
-SocketError socket_startup(const SocketStartupOptions *options)
+SocketError socket_startup(const SocketAllocators *allocators, const SocketStartupOptions *options)
 {
     if (atomic_flag_test_and_set(&initfuncsbusyflag)) return SocketError_OperationInProgress;
     if (atomic_load(&inited)) { atomic_flag_clear(&initfuncsbusyflag); return SocketError_AlreadyInitialized; }
+
+    if (allocators) allocs = *allocators;
+    else
+    {
+        allocs.malloc = malloc;
+        allocs.realloc = realloc;
+        allocs.free = free;
+    }
 
     if (mutex_init(&sockslist_mutex) != MUTEXERROR_SUCCESS)
     { atomic_flag_clear(&initfuncsbusyflag); return SocketError_InitializationError; }
@@ -29,7 +40,7 @@ SocketError socket_startup(const SocketStartupOptions *options)
     #ifdef LIBSOCKET_OS_WINDOWS
         static const SocketStartupOptions defaultopts =
         {
-            .winsock_version = MAKEWORD(LIBSOCKET_WINSOCK_DEFAULT_VERSION_LOW, LIBSOCKET_WINSOCK_DEFAULT_VERSION_HIGH)
+            .winsock_version = LIBSOCKET_WINSOCK_DEFAULT_VERSION
         };
 
         if (!options) options = &defaultopts;
@@ -70,6 +81,8 @@ SocketError socket_cleanup(void)
     #endif
     
     mutex_destroy(sockslist_mutex);
+
+    memset(&allocs, 0, sizeof(allocs));
 
     atomic_store(&inited, false);
     atomic_flag_clear(&initfuncsbusyflag);

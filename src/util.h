@@ -17,4 +17,6 @@
     #define CLAMPSIZET(x) ((size_t)x)
 #endif
 
+extern SocketAllocators allocs;
+
 #endif

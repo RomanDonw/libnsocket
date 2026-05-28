@@ -4,7 +4,7 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-#include "optfuncbase.h"
+#include "optfunc.h"
 
 SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, const void *optval, socklen_t optlen)
 {

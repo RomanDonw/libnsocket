@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <stdatomic.h>
 
+#include "util.h"
+
 mutex_t *sockslist_mutex;
 
 static Socket **sockets = NULL;
@@ -34,7 +36,7 @@ SocketsListError sockslist_add(Socket *socket)
     mutex_lock(sockslist_mutex);
 
     {
-        Socket **new_sockets = (Socket **)libsocket_realloc(sockets, sizeof(Socket *) * (sockets_count + 1));
+        Socket **new_sockets = (Socket **)allocs.realloc(sockets, sizeof(Socket *) * (sockets_count + 1));
         if (!new_sockets) { mutex_unlock(sockslist_mutex); return SocketsListError_MemoryAllocationFailed; }
         sockets = new_sockets;
     }
@@ -58,12 +60,12 @@ SocketsListError sockslist_remove(Socket *socket)
 
     if (sockets_count > 0)
     {
-        Socket **new_sockets = (Socket **)libsocket_realloc(sockets, sizeof(Socket *) * sockets_count);
+        Socket **new_sockets = (Socket **)allocs.realloc(sockets, sizeof(Socket *) * sockets_count);
         if (new_sockets) sockets = new_sockets;
     }
     else
     {
-        libsocket_free(sockets);
+        allocs.free(sockets);
         sockets = NULL;
     }
 
@@ -77,7 +79,7 @@ void sockslist_removeall(bool closesocks)
 
     if (closesocks) for (size_t i = 0; i < sockets_count; i++) socket_close(sockets[i]);
 
-    libsocket_free(sockets);
+    allocs.free(sockets);
     sockets = NULL;
     sockets_count = 0;
 

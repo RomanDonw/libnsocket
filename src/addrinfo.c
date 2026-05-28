@@ -15,6 +15,7 @@
 
 #include "init.h"
 #include "err.h"
+#include "util.h"
 
 static SocketError translateeaierror(int err)
 {
@@ -86,7 +87,7 @@ SocketError socket_getaddrinfo(const char *nodename, const char *servicename, co
     SocketDNSResponse *currresp = NULL;
     for (struct addrinfo *currai = result; currai; currai = currai->ai_next)
     {
-        SocketDNSResponse *resp = libsocket_malloc(sizeof(SocketDNSResponse));
+        SocketDNSResponse *resp = allocs.malloc(sizeof(SocketDNSResponse));
         if (!resp) goto allocfail_resp;
 
         // =============================================================================
@@ -103,7 +104,7 @@ SocketError socket_getaddrinfo(const char *nodename, const char *servicename, co
         if (currai->ai_canonname)
         {
             size_t size = strlen(currai->ai_canonname) + 1;
-            resp->canonname = libsocket_malloc(size);
+            resp->canonname = allocs.malloc(size);
             if (!resp->canonname) goto allocfail_cannonname;
             memcpy(resp->canonname, currai->ai_canonname, size);
         }
@@ -113,7 +114,7 @@ SocketError socket_getaddrinfo(const char *nodename, const char *servicename, co
 
         if (resp->sockaddrlen && currai->ai_addr)
         {
-            resp->sockaddr = libsocket_malloc(resp->sockaddrlen);
+            resp->sockaddr = allocs.malloc(resp->sockaddrlen);
             if (!resp->sockaddr) goto allocfail_sockaddr;
             memcpy(resp->sockaddr, currai->ai_addr, resp->sockaddrlen);
         }
@@ -130,9 +131,9 @@ SocketError socket_getaddrinfo(const char *nodename, const char *servicename, co
         // =============================================================================
 
         allocfail_sockaddr:
-            if (resp->canonname) libsocket_free(resp->canonname);
+            if (resp->canonname) allocs.free(resp->canonname);
         allocfail_cannonname:
-            libsocket_free(resp);
+            allocs.free(resp);
         allocfail_resp:
             freeaddrinfo(result);
             socket_freeaddrinfo(firstresp);
@@ -151,10 +152,10 @@ void socket_freeaddrinfo(SocketDNSResponse *response)
         SocketDNSResponse *_resp = resp;
         resp = resp->next;
 
-        libsocket_free(_resp->canonname);
-        libsocket_free(_resp->sockaddr);
+        allocs.free(_resp->canonname);
+        allocs.free(_resp->sockaddr);
 
-        libsocket_free(_resp); 
+        allocs.free(_resp); 
     }
 }
 

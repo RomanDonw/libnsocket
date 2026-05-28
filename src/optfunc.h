@@ -4,8 +4,8 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-#ifndef OPTFUNCBASE_H
-#define OPTFUNCBASE_H
+#ifndef OPTFUNC_H
+#define OPTFUNC_H
 
 #include "libsocket.h"
 

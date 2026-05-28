@@ -4,7 +4,7 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-#include "optfuncbase.h"
+#include "optfunc.h"
 
 #ifdef LIBSOCKET_DEBUG
     #include <stdio.h>
