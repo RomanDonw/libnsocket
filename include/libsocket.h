@@ -326,7 +326,7 @@ struct SocketStartupOptions
     unsigned short winsock_version;
 } typedef SocketStartupOptions;
 
-#define SOCKSTUPOPTS_DEFAULTNIT \
+#define SOCKSTUPOPTS_DEFAULTINIT \
     {\
         .winsock_version = LIBSOCKET_WINSOCK_DEFAULT_VERSION\
     }
