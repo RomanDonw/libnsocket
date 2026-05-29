@@ -19,9 +19,9 @@
 static atomic_bool inited = ATOMIC_VAR_INIT(false);
 static atomic_flag initfuncsbusyflag = ATOMIC_FLAG_INIT;
 
-bool socket_initialized(void) { return atomic_load(&inited); }
+bool libsocket_initialized(void) { return atomic_load(&inited); }
 
-SocketError socket_startup(const SocketAllocators *allocators, const SocketStartupOptions *options)
+SocketError libsocket_startup(const SocketAllocators *allocators, const SocketStartupOptions *options)
 {
     if (atomic_flag_test_and_set(&initfuncsbusyflag)) return SocketError_OperationInProgress;
     if (atomic_load(&inited)) { atomic_flag_clear(&initfuncsbusyflag); return SocketError_AlreadyInitialized; }
@@ -80,7 +80,7 @@ SocketError socket_startup(const SocketAllocators *allocators, const SocketStart
     return SocketError_Success;
 }
 
-SocketError socket_cleanup(void)
+SocketError libsocket_cleanup(void)
 {
     if (atomic_flag_test_and_set(&initfuncsbusyflag)) return SocketError_OperationInProgress;
     if (!atomic_load(&inited)) { atomic_flag_clear(&initfuncsbusyflag); return SocketError_NotInitialized; }

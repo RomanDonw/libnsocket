@@ -20,13 +20,13 @@ int main(void)
 {
     printf(" === TEST \"%s\" STARTED ===\n\n", testname);
 
-    SocketError err = socket_startup(NULL, NULL);
-    if (err != SocketError_Success) handlesockerror(err, "socket_startup");
+    SocketError err = libsocket_startup(NULL, NULL);
+    if (err != SocketError_Success) handlesockerror(err, "libsocket_startup");
 
     test();
 
-    err = socket_cleanup();
-    if (err != SocketError_Success) handlesockerror(err, "socket_cleanup");
+    err = libsocket_cleanup();
+    if (err != SocketError_Success) handlesockerror(err, "libsocket_cleanup");
 
     printf("\n === TEST \"%s\" PASSED ===\n", testname);
     return 0;
