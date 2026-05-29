@@ -172,8 +172,9 @@ SocketError socket_ioctl(const Socket *socket, SocketIOCTLOption option, void *v
                 int flags = fcntl(socket->desc, F_GETFL, 0);
                 if (flags < 0) return GETLASTTRANSLATEDSYSERR();
 
-                if (*(bool *)value && fcntl(socket->desc, F_SETFL, flags | O_NONBLOCK) < 0) return GETLASTTRANSLATEDSYSERR();
-                else if (!(*(bool *)value) && fcntl(socket->desc, F_SETFL, flags & (~O_NONBLOCK)) < 0) return GETLASTTRANSLATEDSYSERR();
+                if ((*(bool *)value && fcntl(socket->desc, F_SETFL, flags | O_NONBLOCK) < 0) ||\
+                    (!(*(bool *)value) && fcntl(socket->desc, F_SETFL, flags & (~O_NONBLOCK)) < 0))
+                    return GETLASTTRANSLATEDSYSERR();
             #endif
 
             return SocketError_Success;

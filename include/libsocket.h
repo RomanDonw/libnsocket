@@ -326,18 +326,18 @@ struct SocketStartupOptions
     unsigned short winsock_version;
 } typedef SocketStartupOptions;
 
-struct SocketAllocators
+struct LibSocketAllocators
 {
     void *(*malloc)(size_t);
     void *(*realloc)(void *, size_t);
     void (*free)(void *);
-} typedef SocketAllocators;
+} typedef LibSocketAllocators;
 
 LIBSOCKET_API const char * LIBSOCKET_ABI socket_strerror(SocketError errcode); // can be accessed without library initialization.
 
 LIBSOCKET_API bool LIBSOCKET_ABI libsocket_initialized(void); // can be accessed without library initialization.
 // [libsocket_startup]: this function is NOT THREAD-SAFE, options & allocators can be NULL.
-LIBSOCKET_API SocketError LIBSOCKET_ABI libsocket_startup(const SocketAllocators *allocators, const SocketStartupOptions *options);
+LIBSOCKET_API SocketError LIBSOCKET_ABI libsocket_startup(const LibSocketAllocators *allocators, const SocketStartupOptions *options);
 // [libsocket_cleanup]: this function is NOT THREAD-SAFE.
 LIBSOCKET_API SocketError LIBSOCKET_ABI libsocket_cleanup(void);
 

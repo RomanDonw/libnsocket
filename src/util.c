@@ -15,4 +15,4 @@ const IPv4Address IPV4ADDR_BROADCAST = IPV4ADDR_INIT(INADDR_BROADCAST);
 const IPv6Address IPV6ADDR_ANY = IN6ADDR_ANY_INIT;
 const IPv6Address IPV6ADDR_LOOPBACK = IN6ADDR_LOOPBACK_INIT;
 
-SocketAllocators allocs = {0};
+LibSocketAllocators allocs = {0};
