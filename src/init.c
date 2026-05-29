@@ -45,10 +45,7 @@ SocketError libsocket_startup(const LibSocketAllocators *allocators, const Socke
     }
 
     #ifdef LIBSOCKET_OS_WINDOWS
-        static const SocketStartupOptions defaultopts =
-        {
-            .winsock_version = LIBSOCKET_WINSOCK_DEFAULT_VERSION
-        };
+        static const SocketStartupOptions defaultopts = SOCKSTUPOPTS_DEFAULTINIT;
 
         if (!options) options = &defaultopts;
 

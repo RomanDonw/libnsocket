@@ -326,6 +326,11 @@ struct SocketStartupOptions
     unsigned short winsock_version;
 } typedef SocketStartupOptions;
 
+#define SOCKSTUPOPTS_DEFAULTNIT \
+    {\
+        .winsock_version = LIBSOCKET_WINSOCK_DEFAULT_VERSION\
+    }
+
 struct LibSocketAllocators
 {
     void *(*malloc)(size_t);
@@ -365,7 +370,7 @@ LIBSOCKET_API SocketError LIBSOCKET_ABI socket_listen(const Socket *socket, int 
 // [socket_accept]: sockaddr & sockaddrlen can be NULL. see <sys/socket.h> accept function documentation for more info.
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_accept(Socket **acceptedsocket, const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *sockaddrlen);
 
-// [socket_recv - socket_sendto]: processedbytes can be NULL.
+// [socket_recv - ... - socket_sendto]: processedbytes can be NULL.
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_recv(const Socket *socket, void *buffer, size_t len, ssize_t *processedbytes, int flags);
 // [socket_recvfrom]: sockaddr & sockaddrlen can be NULL. see <sys/socket.h> recvfrom function documentation for more info.
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_recvfrom(const Socket *socket, void *buffer, size_t len, ssize_t *processedbytes, int flags, SocketAddressInterface *sockaddr, socklen_t *sockaddrlen);
