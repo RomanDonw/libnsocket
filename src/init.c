@@ -36,7 +36,7 @@ SocketError libsocket_startup(const LibSocketAllocators *allocators, const Socke
 
     // =============================================================================
 
-    if (mutex_init(&sockslist_mutex) != MUTEXERROR_SUCCESS)
+    if (mutex_create(&sockslist_mutex) != MUTEXERROR_SUCCESS)
     {
         memset(&allocs, 0, sizeof(allocs));
 

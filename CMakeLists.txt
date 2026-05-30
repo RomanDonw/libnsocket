@@ -36,7 +36,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-find_package(libmutex 1.0 REQUIRED)
+find_package(libmutex 0.1.0 REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE libmutex::mutex)
 
 if(WIN32)
