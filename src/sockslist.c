@@ -32,8 +32,13 @@ bool sockslist_has(Socket *socket)
 
 SocketsListError sockslist_add(Socket *socket)
 {
-    if (sockslist_has(socket)) return SocketsListError_ItemAlreadyExist;
     mutex_lock(sockslist_mutex);
+
+    if (sockslist_has(socket))
+    {
+        mutex_unlock(sockslist_mutex);
+        return SocketsListError_ItemAlreadyExist;
+    }
 
     {
         Socket **new_sockets = (Socket **)allocs.realloc(sockets, sizeof(Socket *) * (sockets_count + 1));
@@ -77,7 +82,7 @@ void sockslist_removeall(bool closesocks)
 {
     mutex_lock(sockslist_mutex);
 
-    if (closesocks) for (size_t i = 0; i < sockets_count; i++) socket_close(sockets[i]);
+    if (closesocks) for (size_t i = 0; i < sockets_count; i++) __closesocket(sockets[i]);
 
     allocs.free(sockets);
     sockets = NULL;

@@ -17,6 +17,14 @@
     #define CLAMPSIZET(x) ((size_t)x)
 #endif
 
+#ifdef LIBSOCKET_OS_WINDOWS
+    #define CLOSESOCKETDESC(descr) (closesocket(descr))
+#else
+    #define CLOSESOCKETDESC(descr) (close(descr))
+#endif
+
 extern LibSocketAllocators allocs;
+
+SocketError __closesocket(Socket *socket);
 
 #endif

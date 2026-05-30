@@ -24,12 +24,6 @@
     #include <fcntl.h>
 #endif
 
-#ifdef LIBSOCKET_OS_WINDOWS
-    #define CLOSESOCKET(descr) closesocket(descr)
-#else
-    #define CLOSESOCKET(descr) close(descr)
-#endif
-
 SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType type, SocketProtocol protocol)
 {
     ENSURE_INIT;
@@ -38,7 +32,7 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     if (desc == INVALID_SOCKET) return GETLASTTRANSLATEDSYSERR();
 
     Socket *ret = allocs.malloc(sizeof(Socket));
-    if (!ret) { CLOSESOCKET(desc); return SocketError_MemoryAllocationFailed; }
+    if (!ret) { CLOSESOCKETDESC(desc); return SocketError_MemoryAllocationFailed; }
     ret->af = af;
     ret->type = type;
     ret->protocol = protocol;
@@ -47,7 +41,7 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     SocketsListError err = sockslist_add(ret);
     if (err != SocketsListError_Success)
     {
-        CLOSESOCKET(desc);
+        CLOSESOCKETDESC(desc);
         allocs.free(ret);
 
         switch (err)
@@ -70,10 +64,17 @@ SocketError socket_close(Socket *socket)
 
     if (!sockslist_has(socket)) return SocketError_Fault;
 
-    if (CLOSESOCKET(socket->desc)) return GETLASTTRANSLATEDSYSERR();
+    /*
+    if (CLOSESOCKETDESC(socket->desc)) return GETLASTTRANSLATEDSYSERR();
 
     sockslist_remove(socket);
     allocs.free(socket);
+    */
+
+    SocketError err = __closesocket(socket);
+    if (err != SocketError_Success) return err;
+
+    sockslist_remove(socket);
     return SocketError_Success;
 }
 
@@ -106,7 +107,7 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
     if (desc == INVALID_SOCKET) return GETLASTTRANSLATEDSYSERR();
 
     Socket *ret = allocs.malloc(sizeof(Socket));
-    if (!ret) { CLOSESOCKET(desc); return SocketError_MemoryAllocationFailed; }
+    if (!ret) { CLOSESOCKETDESC(desc); return SocketError_MemoryAllocationFailed; }
     ret->af = socket->af;
     ret->type = socket->type;
     ret->protocol = socket->protocol;
@@ -115,7 +116,7 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
     SocketsListError err = sockslist_add(ret);
     if (err != SocketsListError_Success)
     {
-        CLOSESOCKET(desc);
+        CLOSESOCKETDESC(desc);
         allocs.free(ret);
 
         switch (err)

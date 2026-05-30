@@ -100,11 +100,11 @@
 #define LIBSOCKET_ABI
 
 #if defined(LIBSOCKET_LITTLE_ENDIAN)
-    #define SOCKET_HTONS(x) (((uint16_t)(x) & 0xFF00) >> 8) | (((uint16_t)(x) & 0x00FF) << 8)
-    #define SOCKET_HTONL(x) ((((uint32_t)(x) & 0xFF000000) >> 24) | (((uint32_t)(x) & 0x000000FF) << 24) | (((uint32_t)(x) & 0x00FF0000) >> 8) | (((uint32_t)(x) & 0x0000FF00) << 8))
+    #define SOCKET_HTONS(x) ((uint16_t)(((uint16_t)(x) & 0xFF00) >> 8) | (((uint16_t)(x) & 0x00FF) << 8))
+    #define SOCKET_HTONL(x) ((uint32_t)((((uint32_t)(x) & 0xFF000000) >> 24) | (((uint32_t)(x) & 0x000000FF) << 24) | (((uint32_t)(x) & 0x00FF0000) >> 8) | (((uint32_t)(x) & 0x0000FF00) << 8)))
 #elif defined(LIBSOCKET_BIG_ENDIAN)
-    #define SOCKET_HTONS(x) ((uint16_t)x)
-    #define SOCKET_HTONL(x) ((uint32_t)x)
+    #define SOCKET_HTONS(x) ((uint16_t)(x))
+    #define SOCKET_HTONL(x) ((uint32_t)(x))
 #else
     #error Unsupported/unknown CPU architecture endianness.
 #endif
@@ -270,8 +270,8 @@ struct SocketLingerOptions
 
 // flags & type definitions for socket_shutdown.
 typedef unsigned char SocketShutdownFlags;
-#define SOCKET_SD_FLAG_RECV 0b01 // 01b
-#define SOCKET_SD_FLAG_SEND 0b10 // 10b
+#define SOCKET_SD_FLAG_RECV 1 // 01b
+#define SOCKET_SD_FLAG_SEND 2 // 10b
 
 typedef struct Socket Socket;
 
@@ -335,7 +335,7 @@ struct LibSocketAllocators
 {
     void *(*malloc)(size_t);
     void *(*realloc)(void *, size_t);
-    void (*free)(void *);
+    void (*free)(void *); // must be safe for NULL.
 } typedef LibSocketAllocators;
 
 LIBSOCKET_API const char * LIBSOCKET_ABI socket_strerror(SocketError errcode); // can be accessed without library initialization.
