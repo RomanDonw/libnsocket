@@ -71,13 +71,6 @@ SocketError socket_close(Socket *socket)
 
     if (!sockslist_has(socket)) return SocketError_Fault;
 
-    /*
-    if (CLOSESOCKETDESC(socket->desc)) return GETLASTTRANSLATEDSYSERR();
-
-    sockslist_remove(socket);
-    allocs.free(socket);
-    */
-
     SocketError err = __closesocket(socket);
     if (err != SocketError_Success) return err;
 
