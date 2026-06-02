@@ -27,6 +27,7 @@
 SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType type, SocketProtocol protocol)
 {
     ENSURE_INIT;
+    SocketError err;
 
     SOCKETDESCRIPTOR desc = socket(af, type, protocol);
     if (desc == INVALID_SOCKET) return GETLASTTRANSLATEDSYSERR();
@@ -37,14 +38,20 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     ret->type = type;
     ret->protocol = protocol;
     ret->desc = desc;
+    if ((err = socket_setnonblocking(ret, false)) != SocketError_Success)
+    {
+        CLOSESOCKETDESC(desc);
+        allocs.free(ret);
+        return err;
+    }
 
-    SocketsListError err = sockslist_add(ret);
-    if (err != SocketsListError_Success)
+    SocketsListError listerr = sockslist_add(ret);
+    if (listerr != SocketsListError_Success)
     {
         CLOSESOCKETDESC(desc);
         allocs.free(ret);
 
-        switch (err)
+        switch (listerr)
         {
             case SocketsListError_MemoryAllocationFailed:
                 return SocketError_MemoryAllocationFailed;
@@ -102,6 +109,7 @@ SocketError socket_bind(const Socket *socket, const SocketAddressInterface *sock
 SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *sockaddrlen)
 {
     ENSURE_INIT;
+    SocketError err;
 
     SOCKETDESCRIPTOR desc = accept(socket->desc, sockaddr, sockaddrlen);
     if (desc == INVALID_SOCKET) return GETLASTTRANSLATEDSYSERR();
@@ -112,14 +120,20 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
     ret->type = socket->type;
     ret->protocol = socket->protocol;
     ret->desc = desc;
+    if ((err = socket_setnonblocking(ret, socket->nonblocking)) != SocketError_Success)
+    {
+        CLOSESOCKETDESC(desc);
+        allocs.free(ret);
+        return err;
+    }
 
-    SocketsListError err = sockslist_add(ret);
-    if (err != SocketsListError_Success)
+    SocketsListError listerr = sockslist_add(ret);
+    if (listerr != SocketsListError_Success)
     {
         CLOSESOCKETDESC(desc);
         allocs.free(ret);
 
-        switch (err)
+        switch (listerr)
         {
             case SocketsListError_MemoryAllocationFailed:
                 return SocketError_MemoryAllocationFailed;
@@ -158,44 +172,41 @@ SocketError socket_sendto(const Socket *socket, const void *buffer, size_t len, 
     #define IOCTLSOCKET(desc, option, value_ptr) (ioctl(desc, option, value_ptr))
 #endif
 
-SocketError socket_ioctl(const Socket *socket, SocketIOCTLOption option, void *value)
+bool socket_isnonblocking(const Socket *socket) { return socket->nonblocking; }
+
+SocketError socket_setnonblocking(Socket *socket, bool enable)
 {
     ENSURE_INIT;
 
-    switch (option)
-    {
-        case SocketIOCTLOption_NonBlockingIO:
-        {
-            #ifdef LIBSOCKET_OS_WINDOWS
-                unsigned long val = *(bool *)value;
-                if (IOCTLSOCKET(socket->desc, FIONBIO, &val)) return GETLASTTRANSLATEDSYSERR();
-            #else
-                int flags = fcntl(socket->desc, F_GETFL, 0);
-                if (flags < 0) return GETLASTTRANSLATEDSYSERR();
+    #ifdef LIBSOCKET_OS_WINDOWS
+        unsigned long val = enable;
+        if (IOCTLSOCKET(socket->desc, FIONBIO, &val)) return GETLASTTRANSLATEDSYSERR();
+    #else
+        int flags = fcntl(socket->desc, F_GETFL, 0);
+        if (flags < 0) return GETLASTTRANSLATEDSYSERR();
 
-                if ((*(bool *)value && fcntl(socket->desc, F_SETFL, flags | O_NONBLOCK) < 0) ||\
-                    (!(*(bool *)value) && fcntl(socket->desc, F_SETFL, flags & (~O_NONBLOCK)) < 0))
-                    return GETLASTTRANSLATEDSYSERR();
-            #endif
+        if ((enable && fcntl(socket->desc, F_SETFL, flags | O_NONBLOCK) < 0) ||\
+            (!enable && fcntl(socket->desc, F_SETFL, flags & (~O_NONBLOCK)) < 0))
+                return GETLASTTRANSLATEDSYSERR();
+    #endif
 
-            return SocketError_Success;
-        }
+    socket->nonblocking = enable;
+    return SocketError_Success;
+}
 
-        case SocketIOCTLOption_AvailableDataToRead:
-        {
-            #ifdef LIBSOCKET_OS_WINDOWS
-                unsigned long val;
-            #else
-                int val;
-            #endif
-            if (IOCTLSOCKET(socket->desc, FIONREAD, &val)) return GETLASTTRANSLATEDSYSERR();
-            *(uint32_t *)value = val;
-            return SocketError_Success;
-        }
+SocketError socket_getavailablebytes(const Socket *socket, size_t *availbytes)
+{
+    ENSURE_INIT;
 
-        default:
-            return SocketError_IncorrectArgumentValue;
-    }
+    #ifdef LIBSOCKET_OS_WINDOWS
+        unsigned long val;
+    #else
+        int val;
+    #endif
+    if (IOCTLSOCKET(socket->desc, FIONREAD, &val)) return GETLASTTRANSLATEDSYSERR();
+    
+    *availbytes = val;
+    return SocketError_Success;
 }
 
 #ifdef LIBSOCKET_OS_WINDOWS
@@ -209,17 +220,17 @@ SocketError socket_shutdown(const Socket *socket, SocketShutdownFlags flags)
     ENSURE_INIT;
 
     int mode = 0;
-    switch (flags & 0b11)
+    switch (flags & 3) // 11b
     {
-        case 0b11:
+        case 3: // 11b
             mode = SHUT_RDWR;
             break;
 
-        case 0b10:
+        case 2: // 10b
             mode = SHUT_WR;
             break;
 
-        case 0b01:
+        case 1: // 01b
             mode = SHUT_RD;
             break;
     }

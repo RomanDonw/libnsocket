@@ -139,12 +139,6 @@ enum SocketProtocol
         R/W - readable/writeable.
 */
 
-enum SocketIOCTLOption
-{
-    SocketIOCTLOption_NonBlockingIO, // bool, W/O.
-    SocketIOCTLOption_AvailableDataToRead // uint32_t, R/O.
-} typedef SocketIOCTLOption;
-
 enum SocketOptionLevel
 {
     SocketOptionLevel_Socket = SOL_SOCKET,
@@ -377,7 +371,9 @@ LIBSOCKET_API SocketError LIBSOCKET_ABI socket_recvfrom(const Socket *socket, vo
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_send(const Socket *socket, const void *data, size_t len, ssize_t *processedbytes, int flags);
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_sendto(const Socket *socket, const void *buffer, size_t len, ssize_t *processedbytes, int flags, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen);
 
-LIBSOCKET_API SocketError LIBSOCKET_ABI socket_ioctl(const Socket *socket, SocketIOCTLOption option, void *value);
+LIBSOCKET_API bool LIBSOCKET_ABI socket_isnonblocking(const Socket *socket);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_setnonblocking(Socket *socket, bool enable);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getavailablebytes(const Socket *socket, size_t *availbytes);
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_shutdown(const Socket *socket, SocketShutdownFlags flags);
 
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, void *optval, socklen_t *optlen);
