@@ -217,6 +217,7 @@ static SocketError translateeaierror(int err)
 
         #ifdef EAI_SYSTEM
             case EAI_SYSTEM:
+                return GETLASTTRANSLATEDSYSERR();
         #endif
         default:
             return translateerror(err);
