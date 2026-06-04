@@ -208,7 +208,7 @@ static SocketError translateeaierror(int err)
             return SocketError_DNSFailure;
 
         case EAI_BADFLAGS:
-            return SocketError_IncorrectArgumentValue;
+            return SocketError_BadFlags;
 
         #ifdef EAI_OVERFLOW
             case EAI_OVERFLOW:
@@ -219,7 +219,11 @@ static SocketError translateeaierror(int err)
             case EAI_SYSTEM:
                 return GETLASTTRANSLATEDSYSERR();
         #endif
+
         default:
-            return translateerror(err);
+            #ifdef LIBSOCKET_DEBUG
+                fprintf(stderr, "Got unhandled IETF (getaddrinfo/getnameinfo) error: %i.\n", err);
+            #endif
+            return SocketError_InternalUnknownError;
     }
 }

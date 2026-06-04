@@ -168,7 +168,7 @@ enum SocketError
     SocketError_InternalSizeMismatch,
     SocketError_ParsingAddressFailed,
 
-    SocketError_MemoryAllocationFailed, // ENOMEM
+    SocketError_MemoryAllocationFailed, // ENOMEM/EAI_MEMORY
     SocketError_Interrupted, // EINTR
     SocketError_AccessDenied, // EACCES
     SocketError_Fault, // EFAULT
@@ -200,6 +200,7 @@ enum SocketError
     SocketError_CannotTranslateName, // ELOOP
     SocketError_DestinationAddressRequired, // EDESTADDRREQ
     SocketError_NameTooLong, // ENAMETOOLONG
+    SocketError_BadFlags, // (EAI_BADFLAGS)
     SocketError_TooManyProcesses, // EPROCLIM
     SocketError_DNSTemporaryError, // EAI_AGAIN
     SocketError_DNSHostNotFound, // EAI_NONAME
