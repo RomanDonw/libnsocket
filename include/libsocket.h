@@ -139,7 +139,6 @@ enum SocketOptionName
     SocketOptionName_Socket_KeepAliveConnection = SO_KEEPALIVE, // bool, R/W.
     SocketOptionName_Socket_AcceptConnections = SO_ACCEPTCONN, // bool, R/O.
     SocketOptionName_Socket_InternalError = SO_ERROR, // int, R/O.
-    SocketOptionName_Socket_AllowReuseAddress = SO_REUSEADDR, // bool, R/W.
     SocketOptionName_Socket_Broadcast = SO_BROADCAST, // bool, R/W.
     SocketOptionName_Socket_Linger = SO_LINGER, // struct SocketLingerOptions, R/W.
     SocketOptionName_Socket_RecvTimeout = SO_RCVTIMEO, // uint32_t (milliseconds), R/W.

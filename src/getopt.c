@@ -27,7 +27,6 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
             switch (optname)
             {
                 case SocketOptionName_Socket_KeepAliveConnection:
-                case SocketOptionName_Socket_AllowReuseAddress:
                 case SocketOptionName_Socket_Broadcast:
                 case SocketOptionName_Socket_AcceptConnections:
                     goto handlebool;

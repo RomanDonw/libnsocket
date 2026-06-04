@@ -24,7 +24,6 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
                     return SocketError_UnsupportedOperation;
 
                 case SocketOptionName_Socket_KeepAliveConnection:
-                case SocketOptionName_Socket_AllowReuseAddress:
                 case SocketOptionName_Socket_Broadcast:
                     goto handle_bool;
 
