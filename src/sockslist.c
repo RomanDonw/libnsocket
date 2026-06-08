@@ -21,44 +21,44 @@ static size_t sockets_count = 0;
 
 bool sockslist_has(Socket *socket)
 {
-    mutex_lock(sockslist_mutex);
+    mutex_lock_ne(sockslist_mutex);
 
     bool found = false;
     for (size_t i = 0; i < sockets_count; i++) if (sockets[i] == socket) { found = true; break; }
 
-    mutex_unlock(sockslist_mutex);
+    mutex_unlock_ne(sockslist_mutex);
     return found;
 }
 
 SocketsListError sockslist_add(Socket *socket)
 {
-    mutex_lock(sockslist_mutex);
+    mutex_lock_ne(sockslist_mutex);
 
     if (sockslist_has(socket))
     {
-        mutex_unlock(sockslist_mutex);
+        mutex_unlock_ne(sockslist_mutex);
         return SocketsListError_ItemAlreadyExist;
     }
 
     {
         Socket **new_sockets = (Socket **)allocs.realloc(sockets, sizeof(Socket *) * (sockets_count + 1));
-        if (!new_sockets) { mutex_unlock(sockslist_mutex); return SocketsListError_MemoryAllocationFailed; }
+        if (!new_sockets) { mutex_unlock_ne(sockslist_mutex); return SocketsListError_MemoryAllocationFailed; }
         sockets = new_sockets;
     }
 
     sockets[sockets_count++] = socket;
-    mutex_unlock(sockslist_mutex);
+    mutex_unlock_ne(sockslist_mutex);
     return SocketsListError_Success;
 }
 
 SocketsListError sockslist_remove(Socket *socket)
 {
-    mutex_lock(sockslist_mutex);
+    mutex_lock_ne(sockslist_mutex);
 
     bool found = false;
     size_t pos;
     for (pos = 0; pos < sockets_count; pos++) if (sockets[pos] == socket) { found = true; break; }
-    if (!found) { mutex_unlock(sockslist_mutex); return SocketsListError_ItemNotExist; }
+    if (!found) { mutex_unlock_ne(sockslist_mutex); return SocketsListError_ItemNotExist; }
 
     /*if (pos != sockets_count - 1) */sockets[pos] = sockets[sockets_count - 1];
     sockets_count--;
@@ -74,13 +74,13 @@ SocketsListError sockslist_remove(Socket *socket)
         sockets = NULL;
     }
 
-    mutex_unlock(sockslist_mutex);
+    mutex_unlock_ne(sockslist_mutex);
     return SocketsListError_Success;
 }
 
 void sockslist_removeall(bool closesocks)
 {
-    mutex_lock(sockslist_mutex);
+    mutex_lock_ne(sockslist_mutex);
 
     if (closesocks) for (size_t i = 0; i < sockets_count; i++) __closesocket(sockets[i]);
 
@@ -88,5 +88,5 @@ void sockslist_removeall(bool closesocks)
     sockets = NULL;
     sockets_count = 0;
 
-    mutex_unlock(sockslist_mutex);
+    mutex_unlock_ne(sockslist_mutex);
 }

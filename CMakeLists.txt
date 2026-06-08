@@ -12,7 +12,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 set(DEP_LIBMUTEX_PACKNAME libmutex)
 set(DEP_LIBMUTEX_TARGETNAME mutex)
-set(DEP_LIBMUTEX_REQMINVER 0.1.0)
+set(DEP_LIBMUTEX_REQMINVER 0.2.2)
 # ========== ======== ==========
 
 include(GNUInstallDirs)
