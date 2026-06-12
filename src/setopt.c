@@ -6,10 +6,11 @@
 
 #include "optfunc.h"
 
-SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, const void *optval, socklen_t optlen)
+SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, const void *optval, size_t optsize)
 {
     ENSURE_INIT;
 
+    if (!optsize) return SocketError_IncorrectArgumentValue;
     if (!optval) return SocketError_Fault;
 
     switch (level)
@@ -33,7 +34,7 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
 
                 case SocketOptionName_Socket_Linger:
                 {
-                    if (optlen < sizeof(SocketLingerOptions)) return SocketError_IncorrectArgumentValue;
+                    if (optsize < sizeof(SocketLingerOptions)) return SocketError_IncorrectArgumentValue;
 
                     const SocketLingerOptions *lingopts = optval;
 
@@ -47,7 +48,7 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
                 case SocketOptionName_Socket_RecvTimeout:;
                 case SocketOptionName_Socket_SendTimeout:;
                 {
-                    if (optlen < sizeof(uint32_t)) return SocketError_IncorrectArgumentValue;
+                    if (optsize < sizeof(uint32_t)) return SocketError_IncorrectArgumentValue;
 
                     #ifdef LIBSOCKET_OS_WINDOWS
                         const void *data = optval;
@@ -120,7 +121,7 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
         // =============================================================================
 
         handle_bool:
-            if (optlen < sizeof(bool)) return SocketError_IncorrectArgumentValue;
+            if (optsize < sizeof(bool)) return SocketError_IncorrectArgumentValue;
             #ifdef LIBSOCKET_OS_WINDOWS
                 val_dwint = (*(bool *)optval) ? TRUE : FALSE;
             #else
@@ -129,7 +130,7 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
         goto load_dwint;
 
         handle_posorzeroint:
-            if (optlen < sizeof(int) || *(int *)optval < 0) return SocketError_IncorrectArgumentValue;
+            if (optsize < sizeof(int) || *(int *)optval < 0) return SocketError_IncorrectArgumentValue;
             #ifdef LIBSOCKET_OS_WINDOWS
                 val_dwint = *(int *)optval;
                 goto load_dwint;
@@ -138,7 +139,7 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
             #endif
 
         handle_onlyposint:
-            if (optlen < sizeof(int) || *(int *)optval <= 0) return SocketError_IncorrectArgumentValue;
+            if (optsize < sizeof(int) || *(int *)optval <= 0) return SocketError_IncorrectArgumentValue;
             #ifdef LIBSOCKET_OS_WINDOWS
                 val_dwint = *(int *)optval;
                 goto load_dwint;
@@ -147,7 +148,7 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
             #endif
 
         handle_uint8:
-            if (optlen < sizeof(uint8_t)) return SocketError_IncorrectArgumentValue;
+            if (optsize < sizeof(uint8_t)) return SocketError_IncorrectArgumentValue;
             val_dwint = *(uint8_t *)optval;
         goto load_dwint;
 
@@ -155,9 +156,9 @@ SocketError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketO
 
         load_dwint:
             optval = &val_dwint;
-            optlen = sizeof(val_dwint);
+            optsize = sizeof(val_dwint);
         processopt:
-            if (setsockopt(socket->desc, level, optname, optval, optlen)) return GETLASTTRANSLATEDSYSERR();
+            if (setsockopt(socket->desc, level, optname, optval, optsize)) return GETLASTTRANSLATEDSYSERR();
         return SocketError_Success;
     }
 }

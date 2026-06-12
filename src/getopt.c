@@ -9,15 +9,15 @@
 #include "util.h"
 
 static SocketError __getsockopt(SOCKETDESCRIPTOR desc, int level, int optname, void *optval, socklen_t optlen);
-static void __filloutopt(const void *value, socklen_t size, void *optval, socklen_t *optlen);
+static void __filloutopt(const void *value, size_t size, void *optval, size_t *optlen);
 
-SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, void *optval, socklen_t *optlen)
+SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, void *optval, size_t *optsize)
 {
     ENSURE_INIT;
 
     SocketError err;
 
-    if (!optval || !optlen) return SocketError_Fault;
+    if (!optval || !optsize) return SocketError_Fault;
 
     switch (level)
     {
@@ -52,7 +52,7 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
                     lingopts.enable = ling.l_onoff;
                     lingopts.linger = ling.l_linger;
 
-                    __filloutopt(&lingopts, sizeof(lingopts), optval, optlen);
+                    __filloutopt(&lingopts, sizeof(lingopts), optval, optsize);
                     return SocketError_Success;
                 }
 
@@ -83,7 +83,7 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
                         millis = (uint32_t)usecs;
                     #endif
 
-                    __filloutopt(&millis, sizeof(millis), optval, optlen);
+                    __filloutopt(&millis, sizeof(millis), optval, optsize);
                     return SocketError_Success;
                 }
 
@@ -143,7 +143,7 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
             int integer;
             uint8_t uint8;
         } value;
-        socklen_t value_realsize;
+        size_t value_realsize;
 
         // =============================================================================
 
@@ -179,7 +179,7 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
         // =============================================================================
         
         filloptval:
-            __filloutopt(&value, value_realsize, optval, optlen);
+            __filloutopt(&value, value_realsize, optval, optsize);
         return SocketError_Success;
 
         // =============================================================================
@@ -203,8 +203,8 @@ static SocketError __getsockopt(SOCKETDESCRIPTOR desc, int level, int optname, v
     return SocketError_Success;
 }
 
-static void __filloutopt(const void *value, socklen_t size, void *optval, socklen_t *optlen)
+static void __filloutopt(const void *value, size_t size, void *optval, size_t *optsize)
 {
-    if (*optlen > 0) memcpy(optval, value, (*optlen > size) ? size : *optlen);
-    *optlen = size;
+    if (*optsize > 0) memcpy(optval, value, (*optsize > size) ? size : *optsize);
+    *optsize = size;
 }

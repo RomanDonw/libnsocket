@@ -362,8 +362,8 @@ LIBSOCKET_API SocketError LIBSOCKET_ABI socket_setnonblocking(Socket *socket, bo
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getreadablebytes(const Socket *socket, size_t *availbytes);
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_shutdown(const Socket *socket, SocketShutdownFlags flags);
 
-LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, void *optval, socklen_t *optlen);
-LIBSOCKET_API SocketError LIBSOCKET_ABI socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, const void *optval, socklen_t optlen);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, void *optval, size_t *optsize);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, const void *optval, size_t optsize);
 
 LIBSOCKET_API SocketAddressFamily LIBSOCKET_ABI socket_getaf(const Socket *socket); // can be accessed without library initialization.
 LIBSOCKET_API SocketType LIBSOCKET_ABI socket_gettype(const Socket *socket); // can be accessed without library initialization.

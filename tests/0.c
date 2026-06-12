@@ -16,7 +16,7 @@ static SocketError err;
 int getsocksendbuffsize(const Socket *s)
 {
     int sendbuffsize;
-    socklen_t sendbuffsize_len = sizeof(sendbuffsize);
+    size_t sendbuffsize_len = sizeof(sendbuffsize);
     if ((err = socket_getopt(s, SocketOptionLevel_Socket, SocketOptionName_Socket_SendBufferSize, &sendbuffsize, &sendbuffsize_len)) != SocketError_Success) handlesockerror(err, "socket_getopt");
     if (sendbuffsize_len != sizeof(sendbuffsize)) testabort_c("sendbuffsize_len != sizeof(sendbuffsize). Abort.");
     return sendbuffsize;
