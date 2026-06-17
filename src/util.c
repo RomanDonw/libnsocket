@@ -7,6 +7,7 @@
 #include "util.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "err.h"
 #include "types.h"
@@ -17,7 +18,6 @@
 
 #ifdef LIBSOCKET_DEBUG
     #include <stdarg.h>
-    #include <stdio.h>
 #endif
 
 const IPv4Address IPV4ADDR_ANY = IPV4ADDR_INIT(INADDR_ANY);
@@ -53,5 +53,11 @@ SocketError __libsocket_closesocket(Socket *socket)
 
 void __libsocket_defaultpanichandler(const LibSocketPanicInfo *info)
 {
-    
+    fprintf(stderr, "\n\n\n###################\n# LIBSOCKET PANIC #\n###################\n\n");
+
+    fprintf(stderr, "In file:\n    %s\n\nAt line:\n    %lld\n\nFunction:\n    %s\n\n", info->file, info->line, info->function);
+
+    if (info->systemfunction) fprintf(stderr, "System function:\n    %s\n\n", info->systemfunction);
+
+    fprintf(stderr, "Reason:\n    %s\n\n", info->reason);
 }
