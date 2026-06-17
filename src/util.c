@@ -28,6 +28,7 @@ const IPv6Address IPV6ADDR_ANY = IN6ADDR_ANY_INIT;
 const IPv6Address IPV6ADDR_LOOPBACK = IN6ADDR_LOOPBACK_INIT;
 
 LibSocketAllocators __libsocket_allocators = {0};
+LibSocketPanicHandler *__libsocket_panichandler = NULL;
 
 #ifdef LIBSOCKET_DEBUG
     void __libsocket_logdbgerr(const char *msgformat, ...)
@@ -48,4 +49,9 @@ SocketError __libsocket_closesocket(Socket *socket)
     if (CLOSESOCKETDESC(socket->desc)) return GETLASTTRANSLATEDSYSERR();
     allocs.free(socket);
     return SocketError_Success;
+}
+
+void __libsocket_defaultpanichandler(const LibSocketPanicInfo *info)
+{
+    
 }

@@ -37,6 +37,9 @@ SocketError libsocket_startup(const SocketStartupOptions *options)
         allocs.free = free;
     }
 
+    if (options->panichandler) __panichandler = options->panichandler;
+    else __panichandler = __defaultpanichandler;
+
     SocketError err;
 
     // =============================================================================
@@ -60,6 +63,7 @@ SocketError libsocket_startup(const SocketStartupOptions *options)
     return SocketError_Success;
 
     errorquit:
+        __panichandler = NULL;
         memset(&allocs, 0, sizeof(allocs));
         atomic_flag_clear(&initfuncsbusyflag);
     return err;
@@ -88,6 +92,7 @@ SocketError libsocket_cleanup(void)
 
     // =============================================================================
 
+    __panichandler = NULL;
     memset(&allocs, 0, sizeof(allocs));
 
     atomic_store(&inited, false);

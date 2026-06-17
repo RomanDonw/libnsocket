@@ -311,7 +311,7 @@ struct LibSocketAllocators
 struct LibSocketPanicInfo
 {
     // general info.
-    const char *filename;
+    const char *file;
     long long line;
     const char *function;
     const char *reason;
@@ -320,12 +320,12 @@ struct LibSocketPanicInfo
     const char *systemfunction;
 } typedef LibSocketPanicInfo;
 
-typedef void (*LibSocketPanicHandler)(const LibSocketPanicInfo *);
+typedef void LibSocketPanicHandler(const LibSocketPanicInfo *);
 
 struct SocketStartupOptions
 {
     const LibSocketAllocators *allocators; // can be NULL.
-    LibSocketPanicHandler panichandler; // can be NULL.
+    LibSocketPanicHandler *panichandler; // can be NULL.
     
     unsigned short winsock_version;
 } typedef SocketStartupOptions;

@@ -10,10 +10,15 @@
 #include "libsocket.h"
 
 #include <limits.h>
+#include <stddef.h>
 
 #ifdef LIBSOCKET_OS_WINDOWS
     #define CLAMPSIZET(x) ((size_t)x > INT_MAX ? (int)INT_MAX : (int)x)
     #define CLOSESOCKETDESC(descr) (closesocket(descr))
+
+    #if defined(_MSC_VER) && (_MSC_VER) < 1300
+        #define __func__ __FUNCTION__
+    #endif
 #else
     #define CLAMPSIZET(x) ((size_t)x)
     #define CLOSESOCKETDESC(descr) (close(descr))
@@ -22,16 +27,43 @@
 extern LibSocketAllocators __libsocket_allocators;
 #define allocs __libsocket_allocators
 
+// =============================================================================
+
+extern LibSocketPanicHandler *__libsocket_panichandler;
+#define __panichandler __libsocket_panichandler
+
+LibSocketPanicHandler __libsocket_defaultpanichandler;
+#define __defaultpanichandler __libsocket_defaultpanichandler
+
+#define __PANICINFOBASE(reason) \
+    .file = __FILE__,\
+    .line = __LINE__,\
+    .function = __func__,\
+    .reason = reason,
+
+#define __PANICBASE(panicinfo_initializer) \
+    {\
+        const LibSocketPanicInfo info = panicinfo_initializer;\
+        __panichandler(&info);\
+        abort();\
+    }
+
+#define panic_general(reason) __PANICBASE(__PANICINFOBASE(reason))
+#define panic_sysfunc(sysfuncname, reason) __PANICBASE(__PANICINFOBASE(reason) .systemfunction = (#sysfuncname))
+
+#undef __PANICBASE
+#undef __PANICINFOBASE
+
+// =============================================================================
+
+SocketError __libsocket_closesocket(Socket *socket);
+#define __closesocket(...) (__libsocket_closesocket(__VA_ARGS__))
+
 #ifdef LIBSOCKET_DEBUG
     void __libsocket_logdbgerr(const char *msgformat, ...);
     #define LOGDBGERR(msgformat, ...) (__libsocket_logdbgerr(msgformat, __VA_ARGS__))
 #else
     #define LOGDBGERR(msgformat, ...)
 #endif
-
-SocketError __libsocket_closesocket(Socket *socket);
-#define __closesocket(...) (__libsocket_closesocket(__VA_ARGS__))
-
-//SocketError __setsockdefaultopts(const Socket *socket);
 
 #endif
