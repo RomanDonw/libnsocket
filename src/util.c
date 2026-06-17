@@ -27,7 +27,7 @@ const IPv4Address IPV4ADDR_BROADCAST = IPV4ADDR_INIT(INADDR_BROADCAST);
 const IPv6Address IPV6ADDR_ANY = IN6ADDR_ANY_INIT;
 const IPv6Address IPV6ADDR_LOOPBACK = IN6ADDR_LOOPBACK_INIT;
 
-LibSocketAllocators allocs = {0};
+LibSocketAllocators __libsocket_allocators = {0};
 
 #ifdef LIBSOCKET_DEBUG
     void __libsocket_logdbgerr(const char *msgformat, ...)

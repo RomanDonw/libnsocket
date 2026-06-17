@@ -19,7 +19,8 @@
     #define CLOSESOCKETDESC(descr) (close(descr))
 #endif
 
-extern LibSocketAllocators allocs;
+extern LibSocketAllocators __libsocket_allocators;
+#define allocs __libsocket_allocators
 
 #ifdef LIBSOCKET_DEBUG
     void __libsocket_logdbgerr(const char *msgformat, ...);
