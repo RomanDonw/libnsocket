@@ -35,24 +35,23 @@ extern LibSocketPanicHandler *__libsocket_panichandler;
 LibSocketPanicHandler __libsocket_defaultpanichandler;
 #define __defaultpanichandler __libsocket_defaultpanichandler
 
-#define __PANICINFOBASE(reason) \
+#define PANIC_NOERRORCODE (SocketError_Success)
+
+#define __PANICINFOBASE(errcode, _description) \
     .file = __FILE__,\
     .line = __LINE__,\
     .function = __func__,\
-    .reason = reason,
+    .description = (_description),\
+    .error = (errcode)
 
 #define __PANICBASE(panicinfo_initializer) \
     {\
-        const LibSocketPanicInfo info = panicinfo_initializer;\
+        const LibSocketPanicInfo info = { panicinfo_initializer };\
         __panichandler(&info);\
         abort();\
     }
 
-#define panic_general(reason) __PANICBASE(__PANICINFOBASE(reason))
-#define panic_sysfunc(sysfuncname, reason) __PANICBASE(__PANICINFOBASE(reason) .systemfunction = (#sysfuncname))
-
-#undef __PANICBASE
-#undef __PANICINFOBASE
+#define panic_general(errcode, description) __PANICBASE(__PANICINFOBASE(errcode, description))
 
 // =============================================================================
 

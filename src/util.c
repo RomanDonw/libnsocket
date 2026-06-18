@@ -55,9 +55,9 @@ void __libsocket_defaultpanichandler(const LibSocketPanicInfo *info)
 {
     fprintf(stderr, "\n\n\n###################\n# LIBSOCKET PANIC #\n###################\n\n");
 
-    fprintf(stderr, "In file:\n    %s\n\nAt line:\n    %lld\n\nFunction:\n    %s\n\n", info->file, info->line, info->function);
+    fprintf(stderr, "In \"%s\" at line %lld (%s):\n", info->file, info->line, info->function);
 
-    if (info->systemfunction) fprintf(stderr, "System function:\n    %s\n\n", info->systemfunction);
+    if (info->error != PANIC_NOERRORCODE) fprintf(stderr, "    \"%s\" because\n    ", socket_strerror(info->error));
 
-    fprintf(stderr, "Reason:\n    %s\n\n", info->reason);
+    fprintf(stderr, "    %s\n\n###################\n\n", info->description);
 }

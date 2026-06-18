@@ -314,10 +314,9 @@ struct LibSocketPanicInfo
     const char *file;
     long long line;
     const char *function;
-    const char *reason;
+    const char *description;
 
-    // optional (can be NULL).
-    const char *systemfunction;
+    SocketError error; // optional (equals SocketError_Success if true value not present).
 } typedef LibSocketPanicInfo;
 
 typedef void LibSocketPanicHandler(const LibSocketPanicInfo *);
