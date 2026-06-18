@@ -119,18 +119,18 @@ enum SocketProtocol
     SocketProtocol_UDP = IPPROTO_UDP
 } typedef SocketProtocol;
 
-/*
-        R/O - readonly.
-        W/O - writeonly.
-        R/W - readable/writeable.
-*/
-
 enum SocketOptionLevel
 {
     SocketOptionLevel_Socket = SOL_SOCKET,
     SocketOptionLevel_IP = IPPROTO_IP,
     SocketOptionLevel_TCP = IPPROTO_TCP,
 } typedef SocketOptionLevel;
+
+/*
+        R/O - readonly.
+        W/O - writeonly.
+        R/W - readable/writeable.
+*/
 
 enum SocketOptionName
 {

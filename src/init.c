@@ -93,7 +93,7 @@ SocketError libsocket_cleanup(void)
         sockslist_removeall(true);
     #endif
     
-    mutex_destroy(sockslist_mutex);
+    if (mutex_destroy(sockslist_mutex) != MUTEXERROR_SUCCESS) panic_general(PANIC_NOERRORCODE, "Can't destroy mutex after library general cleanup.");
 
     // =============================================================================
 

@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <stdatomic.h>
 
 #include "util.h"
 
@@ -60,7 +59,7 @@ SocketsListError __libsocket_sockslist_remove(Socket *socket)
     for (pos = 0; pos < sockets_count; pos++) if (sockets[pos] == socket) { found = true; break; }
     if (!found) { mutex_unlock_ne(sockslist_mutex); return SocketsListError_ItemNotExist; }
 
-    /*if (pos != sockets_count - 1) */sockets[pos] = sockets[sockets_count - 1];
+    if (pos != sockets_count - 1) sockets[pos] = sockets[sockets_count - 1];
     sockets_count--;
 
     if (sockets_count > 0)
@@ -81,8 +80,11 @@ SocketsListError __libsocket_sockslist_remove(Socket *socket)
 void __libsocket_sockslist_removeall(bool closesocks)
 {
     mutex_lock_ne(sockslist_mutex);
+    
+    SocketError err;
 
-    if (closesocks) for (size_t i = 0; i < sockets_count; i++) __closesocket(sockets[i]);
+    if (closesocks) for (size_t i = 0; i < sockets_count; i++) if (( err = __closesocket(sockets[i])) != SocketError_Success)
+    { panic_general(err, "Can't close socket successfully in critical section."); }
 
     allocs.free(sockets);
     sockets = NULL;
