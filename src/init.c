@@ -53,7 +53,12 @@ SocketError libsocket_startup(const SocketStartupOptions *options)
         if (wsaerr) { err = translateerror(wsaerr); goto errorquit; }
 
         if (data.wVersion != options->winsock_version)
-        { WSACleanup(); err = SocketError_WSAVersionNotSupported; goto errorquit; }
+        {
+            if (WSACleanup()) panic_general(GETLASTTRANSLATEDSYSERR(), "WSACleanup error on cleanup while handling not matching WinSock versions.");
+
+            err = SocketError_WSAVersionNotSupported;
+            goto errorquit;
+        }
     #endif
 
     // =============================================================================
