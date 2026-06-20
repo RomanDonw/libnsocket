@@ -52,7 +52,11 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     ret->type = type;
     ret->protocol = protocol;
     ret->desc = desc;
-    if ((err = socket_setnonblocking(ret, false)) != SocketError_Success) goto errorquit_afteralloc;
+
+    if (mutex_create(&ret->mutex_nonblocking) != MUTEXERROR_SUCCESS)
+    { err = SocketError_MutexAPIError; goto errorquit_afteralloc; }
+
+    if ((err = socket_setnonblocking(ret, false)) != SocketError_Success) goto errorquit_aftermutexcreate;
 
     SocketsListError listerr = sockslist_add(ret);
     if (listerr != SocketsListError_Success)
@@ -66,17 +70,16 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
             default:
                 err = SocketError_Fault;
         }
-        goto errorquit_afteralloc;
+        goto errorquit_aftermutexcreate;
     }
-
-    if (mutex_create(&ret->mutex_nonblocking) != MUTEXERROR_SUCCESS)
-    { err = SocketError_MutexAPIError; goto errorquit_afteralloc; }
 
     *socket_ = ret;
     return SocketError_Success;
 
     // =============================================================================
-    
+    errorquit_aftermutexcreate:
+        if (mutex_destroy(ret->mutex_nonblocking) != MUTEXERROR_SUCCESS)
+        { panic_general(GETLASTTRANSLATEDSYSERR(), "Unable to destroy internal socket mutex on cleanup when handling error."); }
     errorquit_afteralloc:
         allocs.free(ret);
     errorquit_onalloc:
