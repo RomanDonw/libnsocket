@@ -69,6 +69,9 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
         goto errorquit_afteralloc;
     }
 
+    if (mutex_create(&ret->mutex_nonblocking) != MUTEXERROR_SUCCESS)
+    { err = SocketError_MutexAPIError; goto errorquit_afteralloc; }
+
     *socket_ = ret;
     return SocketError_Success;
 
@@ -77,7 +80,8 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     errorquit_afteralloc:
         allocs.free(ret);
     errorquit_onalloc:
-        CLOSESOCKETDESC(desc);
+        if (CLOSESOCKETDESC(desc))
+        { panic_general(GETLASTTRANSLATEDSYSERR(), "Unable to close socket descriptor on cleanup when handling error."); }
     errorquit_beforealloc:
     return err;
 }
@@ -87,14 +91,19 @@ SocketError socket_close(Socket *socket)
     ENSURE_INIT;
     if ((mutex_lock(sockslist_mutex)) != MUTEXERROR_SUCCESS) return SocketError_MutexAPIError;
 
-    if (!sockslist_has(socket)) { SAFE_MUTEX_UNLOCK(sockslist_mutex); return SocketError_Fault; }
+    SocketError err;
 
-    SocketError err = __closesocket(socket);
-    if (err != SocketError_Success) { SAFE_MUTEX_UNLOCK(sockslist_mutex); return err; }
+    if (!sockslist_has(socket)) { err = SocketError_Fault; goto errorquit; }
+
+    if ((err = __closesocket(socket)) != SocketError_Success) goto errorquit;
 
     sockslist_remove(socket);
     SAFE_MUTEX_UNLOCK(sockslist_mutex);
     return SocketError_Success;
+
+    errorquit:
+        SAFE_MUTEX_UNLOCK(sockslist_mutex);
+    return err;
 }
 
 SocketError socket_listen(const Socket *socket, int backlog)
@@ -187,26 +196,43 @@ SocketError socket_sendto(const Socket *socket, const void *buffer, size_t len, 
     #define IOCTLSOCKET(desc, option, value_ptr) (ioctl(desc, option, value_ptr))
 #endif
 
-bool socket_isnonblocking(const Socket *socket) { return socket->nonblocking; }
+bool socket_isnonblocking(const Socket *socket)
+{
+    SAFE_MUTEX_LOCK(socket->mutex_nonblocking);
+    volatile bool ret = socket->nonblocking;
+    SAFE_MUTEX_UNLOCK(socket->mutex_nonblocking);
+    return ret;
+}
 
 SocketError socket_setnonblocking(Socket *socket, bool enable)
 {
     ENSURE_INIT;
 
-    #ifdef LIBSOCKET_OS_WINDOWS
-        unsigned long val = enable;
-        if (IOCTLSOCKET(socket->desc, FIONBIO, &val)) return GETLASTTRANSLATEDSYSERR();
-    #else
-        int flags = fcntl(socket->desc, F_GETFL, 0);
-        if (flags < 0) return GETLASTTRANSLATEDSYSERR();
+    if (mutex_lock(socket->mutex_nonblocking) != MUTEXERROR_SUCCESS) return SocketError_MutexAPIError;
 
-        if ((enable && fcntl(socket->desc, F_SETFL, flags | O_NONBLOCK) < 0) ||\
-            (!enable && fcntl(socket->desc, F_SETFL, flags & (~O_NONBLOCK)) < 0))
-                return GETLASTTRANSLATEDSYSERR();
-    #endif
+    if (socket->nonblocking != enable)
+    {
+        #ifdef LIBSOCKET_OS_WINDOWS
+            unsigned long val = enable;
+            if (IOCTLSOCKET(socket->desc, FIONBIO, &val)) goto errorquit;
+        #else
+            int flags = fcntl(socket->desc, F_GETFL, 0);
+            if (flags < 0) goto errorquit;
 
-    socket->nonblocking = enable;
+            if ((enable && fcntl(socket->desc, F_SETFL, flags | O_NONBLOCK) < 0) ||\
+                (!enable && fcntl(socket->desc, F_SETFL, flags & (~O_NONBLOCK)) < 0))
+                    goto errorquit;
+        #endif
+
+        socket->nonblocking = enable;
+    }
+
+    SAFE_MUTEX_UNLOCK(socket->mutex_nonblocking);
     return SocketError_Success;
+
+    errorquit:
+        SAFE_MUTEX_UNLOCK(socket->mutex_nonblocking);
+    return GETLASTTRANSLATEDSYSERR();
 }
 
 SocketError socket_getreadablebytes(const Socket *socket, size_t *availbytes)

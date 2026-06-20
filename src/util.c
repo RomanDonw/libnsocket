@@ -47,6 +47,10 @@ LibSocketPanicHandler *__libsocket_panichandler = NULL;
 SocketError __libsocket_closesocket(Socket *socket)
 {
     if (CLOSESOCKETDESC(socket->desc)) return GETLASTTRANSLATEDSYSERR();
+
+    if (mutex_destroy(socket->mutex_nonblocking) != MUTEXERROR_SUCCESS)
+    { panic_general(SocketError_MutexAPIError, "Unable to destroy mutex after closing socket descriptor."); }
+
     allocs.free(socket);
     return SocketError_Success;
 }

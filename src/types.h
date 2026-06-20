@@ -9,6 +9,8 @@
 
 #include "libsocket.h"
 
+#include <libmutex.h>
+
 #ifdef LIBSOCKET_OS_WINDOWS
     typedef SSIZE_T ssize_t;
 #endif
@@ -22,6 +24,7 @@ struct Socket
     SocketProtocol protocol;
     
     bool nonblocking;
+    mutex_t *mutex_nonblocking;
 };
 
 #endif

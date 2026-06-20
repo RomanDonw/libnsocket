@@ -320,6 +320,7 @@ struct LibSocketPanicInfo
 } typedef LibSocketPanicInfo;
 
 typedef void LibSocketPanicHandler(const LibSocketPanicInfo *);
+//typedef void LibSocketDebugInfoHandler(const LibSocket)
 
 struct SocketStartupOptions
 {
