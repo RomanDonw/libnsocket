@@ -212,7 +212,7 @@ SocketError socket_sendto(const Socket *socket, const void *buffer, size_t len, 
 bool socket_isnonblocking(const Socket *socket)
 {
     SAFE_MUTEX_LOCK(socket->mutex_nonblocking);
-    volatile bool ret = socket->nonblocking;
+    bool ret = socket->nonblocking;
     SAFE_MUTEX_UNLOCK(socket->mutex_nonblocking);
     return ret;
 }
