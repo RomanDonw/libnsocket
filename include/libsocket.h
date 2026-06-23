@@ -43,10 +43,6 @@
     #include <winsock2.h>
     #include <ws2tcpip.h>
 
-    #ifdef LIBSOCKET_AFUNIX_SUPPORT
-        #include <afunix.h>
-    #endif
-
     #ifdef LIBSOCKET_STATIC
         #ifdef _MSC_VER
             #define LIBSOCKET_API
@@ -75,10 +71,6 @@
     #include <netinet/in.h>
     #include <netinet/tcp.h>
     #include <netdb.h>
-
-    #ifdef LIBSOCKET_AFUNIX_SUPPORT
-        #include <sys/un.h>
-    #endif
     
     #define LIBSOCKET_API __attribute__((visibility("default")))
 
@@ -110,11 +102,7 @@ enum SocketAddressFamily
 {
     SocketAddressFamily_Unspecified = AF_UNSPEC,
     SocketAddressFamily_IPv4 = AF_INET,
-    SocketAddressFamily_IPv6 = AF_INET6,
-
-    #ifdef LIBSOCKET_AFUNIX_SUPPORT
-        SocketAddressFamily_Unix = AF_UNIX
-    #endif
+    SocketAddressFamily_IPv6 = AF_INET6
 } typedef SocketAddressFamily;
 
 enum SocketType
@@ -122,10 +110,6 @@ enum SocketType
     SocketType_Unspecified = 0,
     SocketType_Stream = SOCK_STREAM,
     SocketType_Datagram = SOCK_DGRAM,
-
-    #ifdef LIBSOCKET_AFUNIX_SUPPORT
-        SocketType_SequencedPacket = SOCK_SEQPACKET
-    #endif
 } typedef SocketType;
 
 enum SocketProtocol
