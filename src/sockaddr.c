@@ -17,9 +17,11 @@
 #include "err.h"
 
 #define GETSOCKADDRAF(sockaddr_ptr) (((const struct sockaddr *)sockaddr_ptr)->sa_family)
+
+// remove this function.
 SocketAddressFamily socket_getsockaddraf(const SocketAddressInterface *sockaddr) { return GETSOCKADDRAF(sockaddr); }
 
-SocketError socket_packsockaddr(SocketAddressInterface *sockaddr, SocketAddressFamily af, const IPAddressInterface *addr, unsigned short port)
+SocketError socket_packsockipaddr(SocketIPAddressInterface *sockaddr, SocketAddressFamily af, const IPAddressInterface *addr, unsigned short port)
 {
     switch (af)
     {
@@ -50,7 +52,7 @@ SocketError socket_packsockaddr(SocketAddressInterface *sockaddr, SocketAddressF
     return SocketError_Success;
 }
 
-SocketError socket_unpacksockaddr(const SocketAddressInterface *sockaddr, SocketAddressFamily af, IPAddressInterface *addr, unsigned short *port)
+SocketError socket_unpacksockipaddr(const SocketIPAddressInterface *sockaddr, SocketAddressFamily af, IPAddressInterface *addr, unsigned short *port)
 {
     if (GETSOCKADDRAF(sockaddr) != af) return SocketError_IncorrectArgumentValue;
 

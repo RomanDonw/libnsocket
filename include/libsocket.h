@@ -43,6 +43,10 @@
     #include <winsock2.h>
     #include <ws2tcpip.h>
 
+    #ifdef LIBSOCKET_AFUNIX_SUPPORT
+        #include <afunix.h>
+    #endif
+
     #ifdef LIBSOCKET_STATIC
         #ifdef _MSC_VER
             #define LIBSOCKET_API
@@ -72,6 +76,10 @@
     #include <netinet/tcp.h>
     #include <netdb.h>
 
+    #ifdef LIBSOCKET_AFUNIX_SUPPORT
+        #include <sys/un.h>
+    #endif
+    
     #define LIBSOCKET_API __attribute__((visibility("default")))
 
     typedef int SOCKETDESCRIPTOR;
@@ -102,14 +110,22 @@ enum SocketAddressFamily
 {
     SocketAddressFamily_Unspecified = AF_UNSPEC,
     SocketAddressFamily_IPv4 = AF_INET,
-    SocketAddressFamily_IPv6 = AF_INET6
+    SocketAddressFamily_IPv6 = AF_INET6,
+
+    #ifdef LIBSOCKET_AFUNIX_SUPPORT
+        SocketAddressFamily_Unix = AF_UNIX
+    #endif
 } typedef SocketAddressFamily;
 
 enum SocketType
 {
     SocketType_Unspecified = 0,
     SocketType_Stream = SOCK_STREAM,
-    SocketType_Datagram = SOCK_DGRAM
+    SocketType_Datagram = SOCK_DGRAM,
+
+    #ifdef LIBSOCKET_AFUNIX_SUPPORT
+        SocketType_SequencedPacket = SOCK_SEQPACKET
+    #endif
 } typedef SocketType;
 
 enum SocketProtocol
@@ -252,13 +268,6 @@ typedef unsigned char SocketShutdownFlags;
 #define SOCKET_SD_FLAG_RECV 1 // 01b
 #define SOCKET_SD_FLAG_SEND 2 // 10b
 
-typedef struct Socket Socket;
-
-typedef struct sockaddr_in SocketIPv4Address;
-typedef struct sockaddr_in6 SocketIPv6Address;
-typedef struct sockaddr_storage SocketAddressStorage;
-typedef void SocketAddressInterface;
-
 typedef struct in_addr IPv4Address;
 typedef struct in6_addr IPv6Address;
 typedef void IPAddressInterface;
@@ -266,7 +275,7 @@ typedef void IPAddressInterface;
 #define IPV4ADDRSTRSIZE INET_ADDRSTRLEN
 #define IPV6ADDRSTRSIZE INET6_ADDRSTRLEN
 
-#define IPV4ADDR_INIT(addr) { .s_addr = SOCKET_HTONL(addr) }
+#define IPV4ADDR_INIT(addr) (IPv4Address){ .s_addr = SOCKET_HTONL(addr) }
 #define IPV4ADDR_PACK(a, b, c, d) ((((uint32_t)(a) & 0xFF) << 24) | (((uint32_t)(b) & 0xFF) << 16) | (((uint32_t)(c) & 0xFF) << 8) | ((uint32_t)(d) & 0xFF))
 
 LIBSOCKET_API extern const IPv4Address IPV4ADDR_ANY;
@@ -275,6 +284,16 @@ LIBSOCKET_API extern const IPv4Address IPV4ADDR_BROADCAST;
 
 LIBSOCKET_API extern const IPv6Address IPV6ADDR_ANY;
 LIBSOCKET_API extern const IPv6Address IPV6ADDR_LOOPBACK;
+
+typedef struct Socket Socket;
+
+typedef void SocketAddressInterface;
+
+typedef void SocketIPAddressInterface;
+typedef struct sockaddr_in SocketIPv4Address;
+typedef struct sockaddr_in6 SocketIPv6Address;
+
+typedef struct sockaddr_storage SocketAddressStorage;
 
 #define LIBSOCKET_SOCKETDNSBASE \
     SocketGetAddrInfoFlags flags; /* see SOCKET_AI_... flags for more info. */\
@@ -343,21 +362,23 @@ LIBSOCKET_API bool LIBSOCKET_ABI libsocket_initialized(void); // can be accessed
 LIBSOCKET_API SocketError LIBSOCKET_ABI libsocket_startup(const SocketStartupOptions *options); // options can be NULL.
 LIBSOCKET_API SocketError LIBSOCKET_ABI libsocket_cleanup(void);
 
-LIBSOCKET_API SocketError LIBSOCKET_ABI socket_parseaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr);
-LIBSOCKET_API SocketError LIBSOCKET_ABI socket_addrtostr(const IPAddressInterface *addr, SocketAddressFamily af, char *straddr, socklen_t size);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_parseipaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_ipaddrtostr(const IPAddressInterface *addr, SocketAddressFamily af, char *straddr, socklen_t size);
 
 // [socket_getsockaddraf]: can be accessed without library initialization.
+// remove this function.
 LIBSOCKET_API SocketAddressFamily LIBSOCKET_ABI socket_getsockaddraf(const SocketAddressInterface *sockaddr);
-// [socket_packsockaddr]: can be accessed without library initialization.
-LIBSOCKET_API SocketError LIBSOCKET_ABI socket_packsockaddr(SocketAddressInterface *sockaddr, SocketAddressFamily af, const IPAddressInterface *addr, unsigned short port);
-// [socket_unpacksockaddr]: can be accessed without library initialization.
-LIBSOCKET_API SocketError LIBSOCKET_ABI socket_unpacksockaddr(const SocketAddressInterface *sockaddr, SocketAddressFamily af, IPAddressInterface *addr, unsigned short *port);
+
+// [socket_packsockipaddr]: can be accessed without library initialization.
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_packsockipaddr(SocketIPAddressInterface *sockaddr, SocketAddressFamily af, const IPAddressInterface *addr, unsigned short port);
+// [socket_unpacksockipaddr]: can be accessed without library initialization.
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_unpacksockipaddr(const SocketIPAddressInterface *sockaddr, SocketAddressFamily af, IPAddressInterface *addr, unsigned short *port);
 
 // [socket_getaddrinfo]: request can be NULL, and host OR service also can be NULL, but not both. see <netdb.h> getaddrinfo function documentation for more info.
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getaddrinfo(const char *hostname, const char *servicename, const SocketDNSRequest *request, SocketDNSResponse **response);
 LIBSOCKET_API void LIBSOCKET_ABI socket_freeaddrinfo(SocketDNSResponse *response); // safe for NULL pointer and can be accessed without library initialization.
 // [socket_getnameinfo]: hostname & servicename can be NULL, and hostnamesize OR servicenamesize can be NULL, but not both. (see <netdb.h> getnameinfo function documentation for more info.)
-LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getnameinfo(const SocketAddressInterface *sockaddr, socklen_t sockaddrlen, char *hostname, size_t *hostnamesize, char *servicename, size_t *servicenamesize, SocketGetNameInfoFlags flags);
+LIBSOCKET_API SocketError LIBSOCKET_ABI socket_getnameinfo(const SocketIPAddressInterface *sockaddr, socklen_t sockaddrlen, char *hostname, size_t *hostnamesize, char *servicename, size_t *servicenamesize, SocketGetNameInfoFlags flags);
 
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_open(Socket **socket, SocketAddressFamily af, SocketType type, SocketProtocol protocol);
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_close(Socket *socket);

@@ -41,7 +41,7 @@ void test(void)
 
     IPv4Address localhost = IPV4ADDR_LOOPBACK;
     SocketIPv4Address saddr;
-    if ((err = socket_packsockaddr(&saddr, SocketAddressFamily_IPv4, &localhost, 8000)) != SocketError_Success) handlesockerror(err, "socket_packsockaddr");
+    if ((err = socket_packsockipaddr(&saddr, SocketAddressFamily_IPv4, &localhost, 8000)) != SocketError_Success) handlesockerror(err, "socket_packsockaddr");
     if ((err = socket_connect(s, &saddr, sizeof(saddr))) != SocketError_Success) handlesockerror(err, "socket_connect");
 
     const char *request = "GET / HTTP/1.0\r\n\r\n";

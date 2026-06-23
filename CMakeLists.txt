@@ -6,6 +6,8 @@ project(socket VERSION 0.0 LANGUAGES C)
 set(VERSION_CHECK_METHOD SameMajorVersion)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
+option(UNIXSOCKETS_SUPPORT "UNIX domain sockets support" ON)
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -31,6 +33,7 @@ target_compile_definitions(${PROJECT_NAME}
     PRIVATE $<$<BOOL:${DEBUG}>:LIBSOCKET_DEBUG>
     PRIVATE $<$<BOOL:${BUILD_SHARED_LIBS}>:LIBSOCKET_EXPORT>
     PUBLIC $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:LIBSOCKET_STATIC>
+    PUBLIC $<$<BOOL:${UNIXSOCKETS_SUPPORT}>:LIBSOCKET_AFUNIX_SUPPORT>
 )
 
 # setup includes & required libs

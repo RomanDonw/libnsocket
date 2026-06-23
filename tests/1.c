@@ -16,7 +16,7 @@ static SocketError err;
 void printipv4(IPv4Address addr, const char *addrname)
 {
     static char addrstr[IPV4ADDRSTRSIZE];
-    if ((err = socket_addrtostr(&addr, SocketAddressFamily_IPv4, addrstr, IPV4ADDRSTRSIZE)) != SocketError_Success) handlesockerror(err, "socket_addrtostr");
+    if ((err = socket_ipaddrtostr(&addr, SocketAddressFamily_IPv4, addrstr, IPV4ADDRSTRSIZE)) != SocketError_Success) handlesockerror(err, "socket_addrtostr");
     printf("%s: %s\n", addrname, addrstr);
 }
 
@@ -39,9 +39,9 @@ void test(void)
         char addrstr[IPV4ADDRSTRSIZE];
 
         // display address to bind, pack SocketAddress structure & bind to them.
-        if ((err = socket_addrtostr(&addr, SocketAddressFamily_IPv4, addrstr, IPV4ADDRSTRSIZE)) != SocketError_Success) handlesockerror(err, "socket_addrtostr");
+        if ((err = socket_ipaddrtostr(&addr, SocketAddressFamily_IPv4, addrstr, IPV4ADDRSTRSIZE)) != SocketError_Success) handlesockerror(err, "socket_addrtostr");
         printf("Binding to address %s:%u...\n", addrstr, port);
-        if ((err = socket_packsockaddr(&saddr, SocketAddressFamily_IPv4, &addr, port)) != SocketError_Success) handlesockerror(err, "socket_packsockaddr");
+        if ((err = socket_packsockipaddr(&saddr, SocketAddressFamily_IPv4, &addr, port)) != SocketError_Success) handlesockerror(err, "socket_packsockaddr");
         if ((err = socket_bind(s, &saddr, sizeof(saddr))) != SocketError_Success) handlesockerror(err, "socket_bind");
 
         // fill address & port variables with garbage.
@@ -49,8 +49,8 @@ void test(void)
         port = 0;
 
         // back unpack SocketAddress struct & display unpacked address and port.
-        if ((err = socket_unpacksockaddr(&saddr, SocketAddressFamily_IPv4, &addr, &port)) != SocketError_Success) handlesockerror(err, "socket_unpacksockaddr");
-        if ((err = socket_addrtostr(&addr, SocketAddressFamily_IPv4, addrstr, IPV4ADDRSTRSIZE)) != SocketError_Success) handlesockerror(err, "socket_addrtostr");
+        if ((err = socket_unpacksockipaddr(&saddr, SocketAddressFamily_IPv4, &addr, &port)) != SocketError_Success) handlesockerror(err, "socket_unpacksockaddr");
+        if ((err = socket_ipaddrtostr(&addr, SocketAddressFamily_IPv4, addrstr, IPV4ADDRSTRSIZE)) != SocketError_Success) handlesockerror(err, "socket_addrtostr");
         printf("Binded to address %s:%u.\n", addrstr, port);
 
         switch (socket_getsockaddraf(&saddr))

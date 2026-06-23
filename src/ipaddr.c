@@ -17,7 +17,7 @@
     #include <arpa/inet.h>
 #endif
 
-SocketError socket_parseaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr)
+SocketError socket_parseipaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr)
 {
     ENSURE_INIT;
     int ret = inet_pton(af, straddr, addr);
@@ -26,7 +26,7 @@ SocketError socket_parseaddr(IPAddressInterface *addr, SocketAddressFamily af, c
     return SocketError_Success;
 }
 
-SocketError socket_addrtostr(const IPAddressInterface *addr, SocketAddressFamily af, char *straddr, socklen_t size)
+SocketError socket_ipaddrtostr(const IPAddressInterface *addr, SocketAddressFamily af, char *straddr, socklen_t size)
 {
     ENSURE_INIT;
 

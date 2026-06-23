@@ -132,7 +132,7 @@ void socket_freeaddrinfo(SocketDNSResponse *response)
     }
 }
 
-SocketError socket_getnameinfo(const SocketAddressInterface *sockaddr, socklen_t sockaddrlen, char *hostname, size_t *hostnamesize, char *servicename, size_t *servicenamesize, SocketGetNameInfoFlags flags)
+SocketError socket_getnameinfo(const SocketIPAddressInterface *sockaddr, socklen_t sockaddrlen, char *hostname, size_t *hostnamesize, char *servicename, size_t *servicenamesize, SocketGetNameInfoFlags flags)
 {
     ENSURE_INIT;
     SocketError err;

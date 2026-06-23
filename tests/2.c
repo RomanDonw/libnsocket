@@ -9,9 +9,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 static SocketError err;
 
 const char *testname = "socket_getaddrinfo & socket_getnameinfo test";
+
+static void *ipaddrbuff = NULL;
+
+static char *ipaddrstrbuff = NULL;
+static size_t ipaddrstrsize = 0;
 
 void printdnsinfo(const char *nodename, const char *servicename, const SocketDNSRequest *req)
 {
@@ -86,18 +93,16 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
 
         if (currresp->sockaddr && currresp->sockaddrlen)
         {
-            static char ipaddr[256];
             static unsigned short port;
-            if ((err = socket_unpacksockaddr(currresp->sockaddr, currresp->af, ipaddr, &port)) != SocketError_Success) handlesockerror(err, "socket_unpacksockaddr");
+            if ((err = socket_unpacksockipaddr(currresp->sockaddr, currresp->af, ipaddrbuff, &port)) != SocketError_Success) handlesockerror(err, "socket_unpacksockaddr");
 
-            static char addrstr[1024];
-            if ((err = socket_addrtostr(ipaddr, currresp->af, addrstr, sizeof(addrstr))) != SocketError_Success) handlesockerror(err, "socket_addrtostr");
+            if ((err = socket_ipaddrtostr(ipaddrbuff, currresp->af, ipaddrstrbuff, ipaddrstrsize)) != SocketError_Success) handlesockerror(err, "socket_addrtostr");
 
-            printf(" -  Address: [%s]:%u\n", addrstr, port);
+            printf(" -  Address: [%s]:%u\n", ipaddrstrbuff, port);
         }
         else puts(" -  Address: (unspecified).");
 
-        if (currresp->next) puts("");
+        if (currresp->next) putchar('\n');
         recordn++;
     }
 
@@ -106,7 +111,12 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
 }
 
 void test(void)
-{
+{ 
+    ipaddrbuff = malloc_s(MAX(sizeof(IPv4Address), sizeof(IPv6Address)));
+
+    ipaddrstrsize = MAX(IPV4ADDRSTRSIZE, IPV6ADDRSTRSIZE);
+    ipaddrstrbuff = malloc_s(ipaddrstrsize);
+
     printdnsinfo("google.com", NULL, NULL);
     printdnsinfo("wikipedia.org", "80", NULL);
     printdnsinfo("kernel.org", "http", NULL);
@@ -121,11 +131,14 @@ void test(void)
 
     printdnsinfo("github.com", "http", &req);
 
+    free(ipaddrstrbuff); ipaddrstrbuff = NULL; ipaddrstrsize = 0;
+    free(ipaddrbuff); ipaddrbuff = NULL;
+
     // ===========================================================================================================================================
 
     SocketIPv4Address saddr;
     IPv4Address addr4 = IPV4ADDR_INIT(IPV4ADDR_PACK(127, 0, 0, 1));
-    if ((err = socket_packsockaddr(&saddr, SocketAddressFamily_IPv4, &addr4, 9418)) != SocketError_Success) handlesockerror(err, "socket_packsockaddr");
+    if ((err = socket_packsockipaddr(&saddr, SocketAddressFamily_IPv4, &addr4, 9418)) != SocketError_Success) handlesockerror(err, "socket_packsockaddr");
 
     size_t hostnamesz = 0, servicesz = 0;
     if ((err = socket_getnameinfo(&saddr, sizeof(saddr), NULL, &hostnamesz, NULL, &servicesz, SOCKET_NI_NOFLAGS)) != SocketError_Success) handlesockerror(err, "socket_getnameinfo");
