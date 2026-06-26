@@ -132,7 +132,7 @@ SocketError __libsocket_translateerror(int err)
         #endif
 
         default:
-            LOGDBGERR("got unhandled system error: %i", err);
+            alert("Got unhandled system error: %i.", err);
             return SocketError_InternalUnknownError;
     }
 }

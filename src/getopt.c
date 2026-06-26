@@ -185,7 +185,7 @@ SocketError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketO
         // =============================================================================
         
         varoverflowerr:
-            LOGDBGERR("got internal size overflow in socket_getopt with params: level=%i optname=%i", level, optname);
+            alert("Got internal size overflow in socket_getopt with params: level=%i, optname=%i.", level, optname);
         return SocketError_InternalVariableOverflow;
     }
 }
@@ -196,7 +196,7 @@ static SocketError __getsockopt(SOCKETDESCRIPTOR desc, int level, int optname, v
     if (getsockopt(desc, level, optname, optval, &realoptlen)) return GETLASTTRANSLATEDSYSERR();
     if (realoptlen != optlen)
     {
-        LOGDBGERR("got internal size mismatch in __getsockopt with params: level=%i, optname=%i", level, optname);
+        alert("Got internal size mismatch in __getsockopt with params: level=%i, optname=%i.", level, optname);
         return SocketError_InternalSizeMismatch;
     }
 

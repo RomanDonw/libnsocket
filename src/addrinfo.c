@@ -217,7 +217,7 @@ static SocketError translateeaierror(int err)
         #endif
 
         default:
-            LOGDBGERR("got unhandled IETF (getaddrinfo/getnameinfo) error: %i", err);
+            alert("Got unhandled IETF (getaddrinfo/getnameinfo) error: %i.", err);
             return SocketError_InternalUnknownError;
     }
 }
