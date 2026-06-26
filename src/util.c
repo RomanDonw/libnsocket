@@ -28,20 +28,6 @@ LibSocketAllocators __libsocket_allocators = {0};
 LibSocketPanicHandler *__libsocket_panichandler = NULL;
 LibSocketAlertHandler *__libsocket_alerthandler = NULL;
 
-#ifdef LIBSOCKET_DEBUG
-    void __libsocket_logdbgerr(const char *msgformat, ...)
-    {
-        va_list args;
-        va_start(args, msgformat);
-
-        fprintf(stderr, "[libsocket]: ");
-        vfprintf(stderr, msgformat, args);
-        fputs(".", stderr);
-
-        va_end(args);
-    }
-#endif
-
 SocketError __libsocket_closesocket(Socket *socket)
 {
     if (CLOSESOCKETDESC(socket->desc)) return GETLASTTRANSLATEDSYSERR();

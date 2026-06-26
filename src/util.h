@@ -79,11 +79,4 @@ SocketError __libsocket_closesocket(Socket *socket);
 
 // =============================================================================
 
-#ifdef LIBSOCKET_DEBUG
-    void __libsocket_logdbgerr(const char *msgformat, ...);
-    #define LOGDBGERR(msgformat, ...) (__libsocket_logdbgerr(msgformat, __VA_ARGS__))
-#else
-    #define LOGDBGERR(msgformat, ...)
-#endif
-
 #endif
