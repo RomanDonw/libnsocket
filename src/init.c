@@ -21,12 +21,12 @@ static atomic_flag initfuncsbusyflag = ATOMIC_FLAG_INIT;
 
 bool libsocket_initialized(void) { return atomic_load(&inited); }
 
-SocketError libsocket_startup(const SocketStartupOptions *options)
+SocketError libsocket_startup(const LibSocketStartupOptions *options)
 {
     if (atomic_flag_test_and_set(&initfuncsbusyflag)) return SocketError_OperationInProgress;
     if (atomic_load(&inited)) { atomic_flag_clear(&initfuncsbusyflag); return SocketError_AlreadyInitialized; }
 
-    static const SocketStartupOptions defaultopts = SOCKSTUPOPTS_DEFAULTINIT;
+    static const LibSocketStartupOptions defaultopts = LIBSOCKETSTARTUPOPTIONS_DEFAULTINIT;
     if (!options) options = &defaultopts;
 
     if (options->allocators) allocs = *options->allocators;

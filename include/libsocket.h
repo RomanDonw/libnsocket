@@ -328,21 +328,21 @@ struct LibSocketPanicInfo
 typedef void LibSocketPanicHandler(const LibSocketPanicInfo *);
 typedef void LibSocketAlertHandler(const char *file, long long line, const char *function, const char *format, ...);
 
-struct SocketStartupOptions
+struct LibSocketStartupOptions
 {
     const LibSocketAllocators *allocators; // can be NULL.
     LibSocketPanicHandler *panichandler; // can be NULL.
     LibSocketAlertHandler *alerthandler; // can be NULL.
     
     unsigned short winsock_version; // must be equals 0 to use the default version of WinSock.
-} typedef SocketStartupOptions;
+} typedef LibSocketStartupOptions;
 
-#define SOCKSTUPOPTS_DEFAULTINIT (SocketStartupOptions){0}
+#define LIBSOCKETSTARTUPOPTIONS_DEFAULTINIT (LibSocketStartupOptions){0}
 
 LIBSOCKET_API const char * LIBSOCKET_ABI socket_strerror(SocketError errcode); // can be accessed without library initialization.
 
 LIBSOCKET_API bool LIBSOCKET_ABI libsocket_initialized(void); // can be accessed without library initialization.
-LIBSOCKET_API SocketError LIBSOCKET_ABI libsocket_startup(const SocketStartupOptions *options); // options can be NULL.
+LIBSOCKET_API SocketError LIBSOCKET_ABI libsocket_startup(const LibSocketStartupOptions *options); // options can be NULL.
 LIBSOCKET_API SocketError LIBSOCKET_ABI libsocket_cleanup(void);
 
 LIBSOCKET_API SocketError LIBSOCKET_ABI socket_parseipaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr);
