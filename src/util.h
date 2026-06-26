@@ -63,8 +63,11 @@ extern LibSocketAlertHandler *__libsocket_alerthandler;
 LibSocketAlertHandler __libsocket_defaultalerthandler;
 #define __defaultalerthandler (__libsocket_defaultalerthandler)
 
-
-#define alert(format, ...) (__alerthandler(__FILE__, __LINE__, __func__, format, __VA_ARGS__))
+#ifdef LIBSOCKET_DEBUG
+    #define alert(format, ...) (__alerthandler(__FILE__, __LINE__, __func__, format, __VA_ARGS__))
+#else
+    #define alert(format, ...)
+#endif
 
 // =============================================================================
 
