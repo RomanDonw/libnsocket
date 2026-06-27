@@ -33,18 +33,18 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     // =============================================================================
     
     if (af != SocketAddressFamily_IPv4 && af != SocketAddressFamily_IPv6)
-    { err = SocketError_UnsupportedAddressFamily; goto errorquit_beforealloc; }
+    { err = SocketError_UnsupportedAddressFamily; goto errorquit_generic; }
 
     if (type != SocketType_Stream && type != SocketType_Datagram)
-    { err = SocketError_UnsupportedSocketType; goto errorquit_beforealloc; }
+    { err = SocketError_UnsupportedSocketType; goto errorquit_generic; }
 
     if (protocol != SocketProtocol_Unspecified && protocol != SocketProtocol_TCP && protocol != SocketProtocol_UDP)
-    { err = SocketError_UnsupportedProtocol; goto errorquit_beforealloc; }
+    { err = SocketError_UnsupportedProtocol; goto errorquit_generic; }
 
     // =============================================================================
 
     SOCKETDESCRIPTOR desc = socket(af, type, protocol);
-    if (desc == INVALID_SOCKET) { err = GETLASTTRANSLATEDSYSERR(); goto errorquit_beforealloc; }
+    if (desc == INVALID_SOCKET) { err = GETLASTTRANSLATEDSYSERR(); goto errorquit_generic; }
 
     Socket *ret = allocs.malloc(sizeof(Socket));
     if (!ret) { err = SocketError_MemoryAllocationFailed; goto errorquit_onalloc; }
@@ -54,7 +54,7 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     ret->desc = desc;
 
     if (mutex_create(&ret->mutex_nonblocking) != MUTEXERROR_SUCCESS)
-    { err = SocketError_MutexAPIError; goto errorquit_afteralloc; }
+    { err = SocketError_MutexAPIError; goto errorquit_onmtxapierr; }
 
     if ((err = socket_setnonblocking(ret, false)) != SocketError_Success) goto errorquit_aftermutexcreate;
 
@@ -81,12 +81,12 @@ SocketError socket_open(Socket **socket_, SocketAddressFamily af, SocketType typ
     errorquit_aftermutexcreate:
         if (mutex_destroy(ret->mutex_nonblocking) != MUTEXERROR_SUCCESS)
         { panic_general(GETLASTTRANSLATEDSYSERR(), "Unable to destroy internal socket mutex on cleanup when handling error."); }
-    errorquit_afteralloc:
+    errorquit_onmtxapierr:
         allocs.free(ret);
     errorquit_onalloc:
         if (CLOSESOCKETDESC(desc))
         { panic_general(GETLASTTRANSLATEDSYSERR(), "Unable to close socket descriptor on cleanup when handling error."); }
-    errorquit_beforealloc:
+    errorquit_generic:
     return err;
 }
 
@@ -137,7 +137,7 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
     SocketError err;
 
     SOCKETDESCRIPTOR desc = accept(socket->desc, sockaddr, sockaddrlen);
-    if (desc == INVALID_SOCKET) { err = GETLASTTRANSLATEDSYSERR(); goto errorquit_beforealloc; }
+    if (desc == INVALID_SOCKET) { err = GETLASTTRANSLATEDSYSERR(); goto errorquit_generic; }
 
     Socket *ret = allocs.malloc(sizeof(Socket));
     if (!ret) { err = SocketError_MemoryAllocationFailed; goto errorquit_onalloc; }
@@ -147,7 +147,7 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
     ret->desc = desc;
 
     if (mutex_create(&ret->mutex_nonblocking) != MUTEXERROR_SUCCESS)
-    { err = SocketError_MutexAPIError; goto errorquit_afteralloc; }
+    { err = SocketError_MutexAPIError; goto errorquit_onmtxapierr; }
 
     if ((err = socket_setnonblocking(ret, socket_isnonblocking(socket))) != SocketError_Success) goto errorquit_aftermutexcreate;
 
@@ -174,11 +174,11 @@ SocketError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketA
     errorquit_aftermutexcreate:
         if (mutex_destroy(ret->mutex_nonblocking) != MUTEXERROR_SUCCESS)
         { panic_general(GETLASTTRANSLATEDSYSERR(), "Unable to destroy internal socket mutex on cleanup when handling error."); }
-    errorquit_afteralloc:
+    errorquit_onmtxapierr:
         allocs.free(ret);
     errorquit_onalloc:
         CLOSESOCKETDESC(desc);
-    errorquit_beforealloc:
+    errorquit_generic:
     return err;
 }
 

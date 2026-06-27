@@ -36,7 +36,7 @@ target_compile_definitions(${PROJECT_NAME}
 # setup includes & required libs
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
@@ -58,7 +58,7 @@ install(TARGETS ${PROJECT_NAME}
 )
 install(DIRECTORY "include/" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/configure.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/configure.cmake")
 
 install(EXPORT libsocketTargets
     FILE libsocketTargets.cmake
@@ -68,4 +68,4 @@ install(EXPORT libsocketTargets
 
 # ===== TESTS =====
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/tests.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/tests.cmake")

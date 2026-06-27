@@ -76,7 +76,7 @@ SocketError libsocket_startup(const LibSocketStartupOptions *options, LibSocketS
     if (results)
     {
         #ifdef LIBSOCKET_OS_WINDOWS
-            LibSocketStartupResults res = 
+            LibSocketStartupResults res =
             {
                 .used_winsock_version = wsadata.wVersion,
                 .max_winsock_version = wsadata.wHighVersion,
@@ -119,7 +119,7 @@ SocketError libsocket_cleanup(void)
         sockslist_removeall(true);
     #endif
     
-    if (mutex_destroy(sockslist_mutex) != MUTEXERROR_SUCCESS) panic_general(PANIC_NOERRORCODE, "Can't destroy mutex after library general cleanup.");
+    if (mutex_destroy(sockslist_mutex) != MUTEXERROR_SUCCESS) panic_general(PANIC_NOERRORCODE, "Unable to destroy mutex after library general cleanup.");
 
     // =============================================================================
 

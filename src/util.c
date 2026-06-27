@@ -28,6 +28,9 @@ LibSocketAllocators __libsocket_allocators = {0};
 LibSocketPanicHandler *__libsocket_panichandler = NULL;
 LibSocketAlertHandler *__libsocket_alerthandler = NULL;
 
+const char *__libsocket_panicmsg_unabletolockmtx = "Unable to lock mutex in critical library section.";
+const char *__libsocket_panicmsg_unabletounlockmtx = "Unable to unlock mutex in critical library section.";
+
 SocketError __libsocket_closesocket(Socket *socket)
 {
     if (CLOSESOCKETDESC(socket->desc)) return GETLASTTRANSLATEDSYSERR();

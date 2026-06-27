@@ -84,7 +84,7 @@ void __libsocket_sockslist_removeall(bool closesocks)
     SocketError err;
 
     if (closesocks) for (size_t i = 0; i < sockets_count; i++) if (( err = __closesocket(sockets[i])) != SocketError_Success)
-    { panic_general(err, "Can't close socket successfully in critical section."); }
+    { panic_general(err, "Unable to close socket successfully in critical section."); }
 
     allocs.free(sockets);
     sockets = NULL;

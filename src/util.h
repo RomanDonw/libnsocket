@@ -74,11 +74,13 @@ LibSocketAlertHandler __libsocket_defaultalerthandler;
 SocketError __libsocket_closesocket(Socket *socket);
 #define __closesocket(...) (__libsocket_closesocket(__VA_ARGS__))
 
+extern const char *__libsocket_panicmsg_unabletolockmtx;
 #define SAFE_MUTEX_LOCK(mutex) \
-    { if (mutex_lock(mutex) != MUTEXERROR_SUCCESS) panic_general(SocketError_MutexAPIError, "mutex_lock error in critical library section."); }
+    { if (mutex_lock(mutex) != MUTEXERROR_SUCCESS) panic_general(SocketError_MutexAPIError, __libsocket_panicmsg_unabletolockmtx); }
 
+extern const char *__libsocket_panicmsg_unabletounlockmtx;
 #define SAFE_MUTEX_UNLOCK(mutex) \
-    { if (mutex_unlock(mutex) != MUTEXERROR_SUCCESS) panic_general(SocketError_MutexAPIError, "mutex_unlock error in critical library section."); }
+    { if (mutex_unlock(mutex) != MUTEXERROR_SUCCESS) panic_general(SocketError_MutexAPIError, __libsocket_panicmsg_unabletounlockmtx); }
 
 // =============================================================================
 
