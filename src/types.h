@@ -17,7 +17,7 @@
 
 struct NSocket
 {
-    SOCKETDESCRIPTOR desc;
+    NSOCKET_NATIVEDESCRIPTOR desc;
 
     NSocketAddressFamily af;
     NSocketType type;

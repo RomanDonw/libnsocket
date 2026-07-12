@@ -57,7 +57,8 @@
         #define LIBNSOCKET_API __attribute__((visibility("default")))
     #endif
 
-    typedef SOCKET SOCKETDESCRIPTOR;
+    typedef SOCKET NSOCKET_NATIVEDESCRIPTOR;
+    #define NSOCKET_INVALIDDESCRIPTOR (INVALID_SOCKET)
 
     #define LIBNSOCKET_DEFAULT_WINSOCK_VERSION (MAKEWORD(2, 2))
 
@@ -72,8 +73,8 @@
     
     #define LIBNSOCKET_API __attribute__((visibility("default")))
 
-    typedef int SOCKETDESCRIPTOR;
-    #define INVALID_SOCKET -1
+    typedef int NSOCKET_NATIVEDESCRIPTOR;
+    #define NSOCKET_INVALIDDESCRIPTOR -1
 
 #endif
 
@@ -319,7 +320,7 @@ LIBNSOCKET_API NError LIBNSOCKET_ABI nsocket_getpeername(const NSocket *socket, 
 LIBNSOCKET_API NError LIBNSOCKET_ABI nsocket_getsockname(const NSocket *socket, NSocketAddressInterface *sockaddr, socklen_t *size);
 
 #if defined(LIBNSOCKET_ALLOWUNSAFEACCESS) || defined(LIBNSOCKET_EXPORT)
-    LIBNSOCKET_API SOCKETDESCRIPTOR LIBNSOCKET_ABI nsocket_gethandle(const NSocket *socket); // can be accessed without library initialization.
+    LIBNSOCKET_API NSOCKET_NATIVEDESCRIPTOR LIBNSOCKET_ABI nsocket_gethandle(const NSocket *socket); // can be accessed without library initialization.
 #endif
 
 #ifdef __cplusplus

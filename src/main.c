@@ -47,8 +47,8 @@ NError nsocket_open(NSocket **socket_, NSocketAddressFamily af, NSocketType type
 
     // =============================================================================
 
-    SOCKETDESCRIPTOR desc = socket(af, type, protocol);
-    if (desc == INVALID_SOCKET) { nerr = GETLASTTRANSLATEDSYSERR(); goto errorquit_generic; }
+    NSOCKET_NATIVEDESCRIPTOR desc = socket(af, type, protocol);
+    if (desc == NSOCKET_INVALIDDESCRIPTOR) { nerr = GETLASTTRANSLATEDSYSERR(); goto errorquit_generic; }
 
     #ifdef LIBNSOCKET_OS_WINDOWS
         if (setsockopt(desc, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, &sockoptval_bool_true, sizeof(sockoptval_bool_true)))
@@ -142,8 +142,8 @@ NError nsocket_accept(NSocket **acceptedsocket, const NSocket *socket, NSocketAd
     ENSURE_INIT;
     NError nerr;
 
-    SOCKETDESCRIPTOR desc = accept(socket->desc, sockaddr, sockaddrlen);
-    if (desc == INVALID_SOCKET) { nerr = GETLASTTRANSLATEDSYSERR(); goto errorquit_generic; }
+    NSOCKET_NATIVEDESCRIPTOR desc = accept(socket->desc, sockaddr, sockaddrlen);
+    if (desc == NSOCKET_INVALIDDESCRIPTOR) { nerr = GETLASTTRANSLATEDSYSERR(); goto errorquit_generic; }
 
     #ifdef LIBNSOCKET_OS_WINDOWS
         if (setsockopt(desc, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, &sockoptval_bool_true, sizeof(sockoptval_bool_true)))
@@ -317,4 +317,4 @@ NError nsocket_getsockname(const NSocket *socket, NSocketAddressInterface *socka
     return NError_Success;
 }
 
-SOCKETDESCRIPTOR nsocket_gethandle(const NSocket *socket) { return socket->desc; }
+NSOCKET_NATIVEDESCRIPTOR nsocket_gethandle(const NSocket *socket) { return socket->desc; }

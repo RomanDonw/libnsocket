@@ -8,7 +8,7 @@
 
 #include "util.h"
 
-static inline NError __getsockopt(SOCKETDESCRIPTOR desc, int level, int optname, void *optval, socklen_t optlen);
+static inline NError __getsockopt(NSOCKET_NATIVEDESCRIPTOR desc, int level, int optname, void *optval, socklen_t optlen);
 static void __filloutopt(const void *value, size_t size, void *optval, size_t *optlen);
 
 NError nsocket_getopt(const NSocket *socket, NSocketOptionLevel level, NSocketOptionName optname, void *optval, size_t *optsize)
@@ -190,7 +190,7 @@ NError nsocket_getopt(const NSocket *socket, NSocketOptionLevel level, NSocketOp
     }
 }
 
-static NError __getsockopt(SOCKETDESCRIPTOR desc, int level, int optname, void *optval, socklen_t optlen)
+static NError __getsockopt(NSOCKET_NATIVEDESCRIPTOR desc, int level, int optname, void *optval, socklen_t optlen)
 {
     socklen_t realoptlen = optlen;
     if (getsockopt(desc, level, optname, optval, &realoptlen)) return GETLASTTRANSLATEDSYSERR();
