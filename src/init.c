@@ -4,7 +4,7 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-#include "libsocket.h"
+#include "libnsocket.h"
 #include "init.h"
 
 #include <stdio.h>
@@ -18,15 +18,15 @@
 static NThreadAtomicBool inited = NTHREAD_ATOMICBOOLINIT(false);
 static NThreadAtomicBool funcslock = NTHREAD_ATOMICBOOLINIT(false);
 
-bool libsocket_initialized(void) { return nthread_atomicbool_load(&inited); }
+bool libnsocket_initialized(void) { return nthread_atomicbool_load(&inited); }
 
-NError libsocket_startup(const LibSocketStartupOptions *options, LibSocketStartupResults *results)
+NError libnsocket_startup(const LibNSocketStartupOptions *options, LibNSocketStartupResults *results)
 {
     if (nthread_atomicbool_cmpxchgv(&funcslock, false, true)) return NError_OperationInProgress;
     if (nthread_atomicbool_load(&inited)) { nthread_atomicbool_store(&funcslock, false); return NError_AlreadyInitialized; }
     if (!libnthread_initialized()) { nthread_atomicbool_store(&funcslock, false); return NError_DependencyNotInitialized; }
 
-    static const LibSocketStartupOptions defaultopts = LIBSOCKETSTARTUPOPTIONS_DEFAULTINIT;
+    static const LibNSocketStartupOptions defaultopts = LIBNSOCKETSTARTUPOPTIONS_DEFAULTINIT;
     if (!options) options = &defaultopts;
 
     if (options->allocators) allocs = *options->allocators;
@@ -45,15 +45,15 @@ NError libsocket_startup(const LibSocketStartupOptions *options, LibSocketStartu
 
     // =============================================================================
 
-    NError nerr = n_unorderedset_create(&sockslist, allocs, sizeof(Socket *));
+    NError nerr = n_unorderedset_create(&sockslist, allocs, sizeof(NSocket *));
     if (nerr != NError_Success) goto errorquit_generic;
 
     if ((nerr = nthread_mutex_create(&sockslistmutex)) != NError_Success) goto errorquit_aftercreatesockslist;
 
-    LibSocketStartupResults res = {0};
+    #ifdef LIBNSOCKET_OS_WINDOWS
+        LibNSocketStartupResults res = {0};
 
-    #ifdef LIBSOCKET_OS_WINDOWS
-        unsigned short winsock_version = options->winsock_version ? options->winsock_version : LIBSOCKET_DEFAULT_WINSOCK_VERSION;
+        unsigned short winsock_version = options->winsock_version ? options->winsock_version : LIBNSOCKET_DEFAULT_WINSOCK_VERSION;
 
         WSADATA wsadata;
         int wsaerr = WSAStartup(winsock_version, &wsadata);
@@ -75,24 +75,24 @@ NError libsocket_startup(const LibSocketStartupOptions *options, LibSocketStartu
 
     if (results)
     {
-        #ifdef LIBSOCKET_OS_WINDOWS
-            LibSocketStartupResults res =
+        #ifdef LIBNSOCKET_OS_WINDOWS
+            LibNSocketStartupResults res =
             {
                 .used_winsock_version = wsadata.wVersion,
                 .max_winsock_version = wsadata.wHighVersion,
-                .max_sockets_count = wsadata.iMaxSockets,
+                .max_sockets_count = wsadata.iMaxNSockets,
                 .max_datagram_size = wsadata.iMaxUdpDg
             };
 
             memcpy(results, &res, sizeof(res));
         #else
-            memset(results, 0, sizeof(LibSocketStartupResults));
+            memset(results, 0, sizeof(LibNSocketStartupResults));
         #endif
     }
 
     return NError_Success;
 
-    errorquit_aftersockslistmtxcreate:
+    //errorquit_aftersockslistmtxcreate:
         if ((nerr = nthread_mutex_destroy(sockslistmutex)) != NError_Success) panic_general(nerr, "Unable to destroy mutex of sockets list during handling error.");
         sockslistmutex = NULL;
     errorquit_aftercreatesockslist:
@@ -106,7 +106,7 @@ NError libsocket_startup(const LibSocketStartupOptions *options, LibSocketStartu
     return nerr;
 }
 
-NError libsocket_cleanup(void)
+NError libnsocket_cleanup(void)
 {
     if (nthread_atomicbool_cmpxchgv(&funcslock, false, true)) return NError_OperationInProgress;
     if (!nthread_atomicbool_load(&inited)) { nthread_atomicbool_store(&funcslock, false); return NError_NotInitialized; }
@@ -115,14 +115,14 @@ NError libsocket_cleanup(void)
 
     NError nerr;
 
-    #ifdef LIBSOCKET_OS_WINDOWS
+    #ifdef LIBNSOCKET_OS_WINDOWS
         if (WSACleanup())
         {
             nthread_atomicbool_store(&funcslock, false);
             return GETLASTTRANSLATEDSYSERR();
         }
     #else
-        Socket *socket;
+        NSocket *socket;
         for (size_t i = 0; i < n_unorderedset_getlength(sockslist); i++)
         {
             if (((nerr = n_unorderedset_getelement(sockslist, i, &socket)) != NError_Success) || ((nerr = __closesocket(socket)) != NError_Success))

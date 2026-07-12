@@ -7,7 +7,7 @@
 #ifndef OPTFUNC_H
 #define OPTFUNC_H
 
-#include "libsocket.h"
+#include "libnsocket.h"
 
 #include <string.h>
 #include <limits.h>
@@ -16,7 +16,7 @@
 #include "init.h"
 #include "types.h"
 
-#ifndef LIBSOCKET_OS_WINDOWS
+#ifndef LIBNSOCKET_OS_WINDOWS
     #include <sys/time.h>
 #endif
 

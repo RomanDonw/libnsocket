@@ -13,36 +13,36 @@
 
 static NError err;
 
-const char *testname = "socket_getaddrinfo & socket_getnameinfo test";
+const char *testname = "nsocket_getaddrinfo & nsocket_getnameinfo test";
 
 static void *ipaddrbuff = NULL;
 
 static char *ipaddrstrbuff = NULL;
 static size_t ipaddrstrsize = 0;
 
-void printdnsinfo(const char *nodename, const char *servicename, const SocketDNSRequest *req)
+void printdnsinfo(const char *nodename, const char *servicename, const NSocketDNSRequest *req)
 {
-    SocketDNSResponse *resps;
-    if ((err = socket_getaddrinfo(nodename, servicename, req, &resps)) != NError_Success) handlesockerror(err, "socket_getaddrinfo");
+    NSocketDNSResponse *resps;
+    if ((err = nsocket_getaddrinfo(nodename, servicename, req, &resps)) != NError_Success) handlesockerror(err, "nsocket_getaddrinfo");
 
     printf("======================================\n   node: %s, service: %s\n======================================\n", nodename, servicename);
 
     size_t recordn = 0;
-    for (SocketDNSResponse *currresp = resps; currresp; currresp = currresp->next)
+    for (NSocketDNSResponse *currresp = resps; currresp; currresp = currresp->next)
     {
         printf("Record index #%zu:\n -  Flags: 0x%x (0%Xh).\n -  Address family: ", recordn, currresp->flags, currresp->flags);
 
         switch (currresp->af)
         {
-            case SocketAddressFamily_Unspecified:
+            case NSocketAddressFamily_Unspecified:
                 puts("(unspecified).");
                 break;
 
-            case SocketAddressFamily_IPv4:
+            case NSocketAddressFamily_IPv4:
                 puts("IPv4.");
                 break;
 
-            case SocketAddressFamily_IPv6:
+            case NSocketAddressFamily_IPv6:
                 puts("IPv6.");
                 break;
 
@@ -50,18 +50,18 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
                 puts("(unknown/unsupported).");
         }
 
-        printf(" -  Socket type: ");
+        printf(" -  NSocket type: ");
         switch (currresp->type)
         {
-            case SocketType_Unspecified:
+            case NSocketType_Unspecified:
                 puts("(any).");
                 break;
 
-            case SocketType_Stream:
+            case NSocketType_Stream:
                 puts("stream.");
                 break;
 
-            case SocketType_Datagram:
+            case NSocketType_Datagram:
                 puts("datagram.");
                 break;
 
@@ -72,15 +72,15 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
         printf(" -  Protocol: ");
         switch (currresp->protocol)
         {
-            case SocketProtocol_Unspecified:
+            case NSocketProtocol_Unspecified:
                 puts("(any).");
                 break;
 
-            case SocketProtocol_TCP:
+            case NSocketProtocol_TCP:
                 puts("TCP.");
                 break;
             
-            case SocketProtocol_UDP:
+            case NSocketProtocol_UDP:
                 puts("UDP.");
                 break;
 
@@ -94,9 +94,9 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
         if (currresp->sockaddr && currresp->sockaddrlen)
         {
             static unsigned short port;
-            if ((err = socket_unpacksockipaddr(currresp->sockaddr, currresp->af, ipaddrbuff, &port)) != NError_Success) handlesockerror(err, "socket_unpacksockaddr");
+            if ((err = nsocket_unpacksockipaddr(currresp->sockaddr, currresp->af, ipaddrbuff, &port)) != NError_Success) handlesockerror(err, "nsocket_unpacksockaddr");
 
-            if ((err = socket_ipaddrtostr(ipaddrbuff, currresp->af, ipaddrstrbuff, ipaddrstrsize)) != NError_Success) handlesockerror(err, "socket_addrtostr");
+            if ((err = nsocket_ipaddrtostr(ipaddrbuff, currresp->af, ipaddrstrbuff, ipaddrstrsize)) != NError_Success) handlesockerror(err, "nsocket_addrtostr");
 
             printf(" -  Address: [%s]:%u\n", ipaddrstrbuff, port);
         }
@@ -106,7 +106,7 @@ void printdnsinfo(const char *nodename, const char *servicename, const SocketDNS
         recordn++;
     }
 
-    socket_freeaddrinfo(resps);
+    nsocket_freeaddrinfo(resps);
     puts("======================================\n======================================\n======================================\n");
 }
 
@@ -121,12 +121,12 @@ void test(void)
     printdnsinfo("wikipedia.org", "80", NULL);
     printdnsinfo("kernel.org", "http", NULL);
 
-    SocketDNSRequest req =
+    NSocketDNSRequest req =
     {
-        .flags = SOCKET_AI_FLAG_CANONNAME,
-        .af = SocketAddressFamily_IPv4,
-        .type = SocketType_Stream,
-        .protocol = SocketProtocol_TCP
+        .flags = NSOCKET_AI_FLAG_CANONNAME,
+        .af = NSocketAddressFamily_IPv4,
+        .type = NSocketType_Stream,
+        .protocol = NSocketProtocol_TCP
     };
 
     printdnsinfo("github.com", "http", &req);
@@ -136,16 +136,16 @@ void test(void)
 
     // ===========================================================================================================================================
 
-    SocketIPv4Address saddr;
+    NSocketIPv4Address saddr;
     IPv4Address addr4 = IPV4ADDR_INIT(IPV4ADDR_PACK(127, 0, 0, 1));
-    if ((err = socket_packsockipaddr(&saddr, SocketAddressFamily_IPv4, &addr4, 9418)) != NError_Success) handlesockerror(err, "socket_packsockaddr");
+    if ((err = nsocket_packsockipaddr(&saddr, NSocketAddressFamily_IPv4, &addr4, 9418)) != NError_Success) handlesockerror(err, "nsocket_packsockaddr");
 
     size_t hostnamesz = 0, servicesz = 0;
-    if ((err = socket_getnameinfo(&saddr, sizeof(saddr), NULL, &hostnamesz, NULL, &servicesz, SOCKET_NI_NOFLAGS)) != NError_Success) handlesockerror(err, "socket_getnameinfo");
+    if ((err = nsocket_getnameinfo(&saddr, sizeof(saddr), NULL, &hostnamesz, NULL, &servicesz, NSOCKET_NI_NOFLAGS)) != NError_Success) handlesockerror(err, "nsocket_getnameinfo");
 
     char *hostname = malloc_s(hostnamesz);
     char *servicename = malloc_s(servicesz);
-    if ((err = socket_getnameinfo(&saddr, sizeof(saddr), hostname, &hostnamesz, servicename, &servicesz, SOCKET_NI_NOFLAGS)) != NError_Success) handlesockerror(err, "socket_getnameinfo");
+    if ((err = nsocket_getnameinfo(&saddr, sizeof(saddr), hostname, &hostnamesz, servicename, &servicesz, NSOCKET_NI_NOFLAGS)) != NError_Success) handlesockerror(err, "nsocket_getnameinfo");
 
     printf("127.0.0.1:9418 resolved to (host | service): %s | %s.\n", hostname, servicename);
 

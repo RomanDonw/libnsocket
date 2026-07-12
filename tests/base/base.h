@@ -9,7 +9,7 @@
 
 #define _POSIX_C_SOURCE 199309L
 
-#include "libsocket.h"
+#include "libnsocket.h"
 
 #include <stdint.h>
 #include <stdbool.h>

@@ -4,7 +4,7 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-#include "libsocket.h"
+#include "libnsocket.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -12,12 +12,12 @@
 #include "init.h"
 #include "err.h"
 
-#ifndef LIBSOCKET_OS_WINDOWS
+#ifndef LIBNSOCKET_OS_WINDOWS
     #include <unistd.h>
     #include <arpa/inet.h>
 #endif
 
-NError socket_parseipaddr(IPAddressInterface *addr, SocketAddressFamily af, const char *straddr)
+NError nsocket_parseipaddr(IPAddressInterface *addr, NSocketAddressFamily af, const char *straddr)
 {
     ENSURE_INIT;
     int ret = inet_pton(af, straddr, addr);
@@ -26,14 +26,14 @@ NError socket_parseipaddr(IPAddressInterface *addr, SocketAddressFamily af, cons
     return NError_Success;
 }
 
-NError socket_ipaddrtostr(const IPAddressInterface *addr, SocketAddressFamily af, char *straddr, socklen_t size)
+NError nsocket_ipaddrtostr(const IPAddressInterface *addr, NSocketAddressFamily af, char *straddr, socklen_t size)
 {
     ENSURE_INIT;
 
     if (!inet_ntop(af, addr, straddr, size))
     {
         int err = GETLASTERROR();
-        #ifdef LIBSOCKET_OS_WINDOWS
+        #ifdef LIBNSOCKET_OS_WINDOWS
             if (err == SOCKERR_INVAL) return NError_NoSpaceLeft;
         #endif
             return translateerror(err);

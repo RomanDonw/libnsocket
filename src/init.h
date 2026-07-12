@@ -11,6 +11,6 @@
 
 #include "err.h"
 
-#define ENSURE_INIT { if (!libsocket_initialized()) return NError_NotInitialized; }
+#define ENSURE_INIT { if (!libnsocket_initialized()) return NError_NotInitialized; }
 
 #endif

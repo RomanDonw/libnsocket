@@ -4,11 +4,11 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-#include "libsocket.h"
+#include "libnsocket.h"
 #include "err.h"
 #include "util.h"
 
-NError __libsocket_translateerror(int err)
+NError __libnsocket_translateerror(int err)
 {
     switch (err)
     {
@@ -108,7 +108,7 @@ NError __libsocket_translateerror(int err)
                 return NError_TooManyProcesses;
         #endif
 
-        #ifdef LIBSOCKET_OS_WINDOWS
+        #ifdef LIBNSOCKET_OS_WINDOWS
             case SOCKERR_WOULDBLOCK:
                 return NError_WouldBlock;
 

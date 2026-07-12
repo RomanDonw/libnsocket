@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <libnthread.h>
 
-#ifdef LIBSOCKET_OS_WINDOWS
+#ifdef LIBNSOCKET_OS_WINDOWS
     #include <windows.h>
 #else
     #include <unistd.h>
@@ -24,12 +24,12 @@ int main(void)
     NError err = libnthread_startup(NULL);
     if (err != NError_Success) handlesockerror(err, "libnthread_startup");
 
-    if ((err = libsocket_startup(NULL, NULL)) != NError_Success) handlesockerror(err, "libsocket_startup");
+    if ((err = libnsocket_startup(NULL, NULL)) != NError_Success) handlesockerror(err, "libnsocket_startup");
 
     test();
 
-    err = libsocket_cleanup();
-    if (err != NError_Success) handlesockerror(err, "libsocket_cleanup");
+    err = libnsocket_cleanup();
+    if (err != NError_Success) handlesockerror(err, "libnsocket_cleanup");
 
     if ((err = libnthread_cleanup()) != NError_Success) handlesockerror(err, "libnthread_cleanup");
 
@@ -84,7 +84,7 @@ void *realloc_s(void *ptr, size_t size)
 
 void waitms(uint32_t milliseconds)
 {
-    #ifdef LIBSOCKET_OS_WINDOWS
+    #ifdef LIBNSOCKET_OS_WINDOWS
         Sleep(milliseconds);
     #else
         struct timespec d;

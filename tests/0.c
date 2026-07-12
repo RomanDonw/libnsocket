@@ -13,44 +13,44 @@
 
 static NError err;
 
-int getsocksendbuffsize(const Socket *s)
+int getsocksendbuffsize(const NSocket *s)
 {
     int sendbuffsize;
     size_t sendbuffsize_len = sizeof(sendbuffsize);
-    if ((err = socket_getopt(s, SocketOptionLevel_Socket, SocketOptionName_Socket_SendBufferSize, &sendbuffsize, &sendbuffsize_len)) != NError_Success) handlesockerror(err, "socket_getopt");
+    if ((err = nsocket_getopt(s, NSocketOptionLevel_Socket, NSocketOptionName_Socket_SendBufferSize, &sendbuffsize, &sendbuffsize_len)) != NError_Success) handlesockerror(err, "nsocket_getopt");
     if (sendbuffsize_len != sizeof(sendbuffsize)) testabort_c("sendbuffsize_len != sizeof(sendbuffsize). Abort.");
     return sendbuffsize;
 }
 
-void setsocksendbuffsize(const Socket *s, int size)
+void setsocksendbuffsize(const NSocket *s, int size)
 {
-    err = socket_setopt(s, SocketOptionLevel_Socket, SocketOptionName_Socket_RecvBufferSize, &size, sizeof(size));
-    if (err != NError_Success) handlesockerror(err, "socket_setopt");
+    err = nsocket_setopt(s, NSocketOptionLevel_Socket, NSocketOptionName_Socket_RecvBufferSize, &size, sizeof(size));
+    if (err != NError_Success) handlesockerror(err, "nsocket_setopt");
 }
 
 const char *testname = "HTTP 1.0 GET request to localhost:8000";
 
 void test(void)
 {
-    Socket *s;
-    if ((err = socket_open(&s, SocketAddressFamily_IPv4, SocketType_Stream, SocketProtocol_TCP)) != NError_Success) handlesockerror(err, "socket_open");
+    NSocket *s;
+    if ((err = nsocket_open(&s, NSocketAddressFamily_IPv4, NSocketType_Stream, NSocketProtocol_TCP)) != NError_Success) handlesockerror(err, "nsocket_open");
 
     printf("Old send buffer size: %i\n", getsocksendbuffsize(s));
     setsocksendbuffsize(s, 4096);
     printf("New send buffer size: %i\n", getsocksendbuffsize(s));
 
     IPv4Address localhost = IPV4ADDR_LOOPBACK;
-    SocketIPv4Address saddr;
-    if ((err = socket_packsockipaddr(&saddr, SocketAddressFamily_IPv4, &localhost, 8000)) != NError_Success) handlesockerror(err, "socket_packsockaddr");
-    if ((err = socket_connect(s, &saddr, sizeof(saddr))) != NError_Success) handlesockerror(err, "socket_connect");
+    NSocketIPv4Address saddr;
+    if ((err = nsocket_packsockipaddr(&saddr, NSocketAddressFamily_IPv4, &localhost, 8000)) != NError_Success) handlesockerror(err, "nsocket_packsockaddr");
+    if ((err = nsocket_connect(s, &saddr, sizeof(saddr))) != NError_Success) handlesockerror(err, "nsocket_connect");
 
     const char *request = "GET / HTTP/1.0\r\n\r\n";
-    if ((err = socket_send(s, request, strlen(request), NULL, SOCKET_SEND_NOFLAGS)) != NError_Success) handlesockerror(err, "socket_send");
+    if ((err = nsocket_send(s, request, strlen(request), NULL, NSOCKET_SEND_NOFLAGS)) != NError_Success) handlesockerror(err, "nsocket_send");
 
     waitms(100);
 
     size_t avail;
-    if ((err = socket_getreadablebytes(s, &avail)) != NError_Success) handlesockerror(err, "socket_getreadablebytes");
+    if ((err = nsocket_getreadablebytes(s, &avail)) != NError_Success) handlesockerror(err, "nsocket_getreadablebytes");
     printf("Available bytes: %zu\n\n", avail);
     
     #define BUFFER_SIZE 512
@@ -58,9 +58,9 @@ void test(void)
     size_t readbytes;
     while (true)
     {
-        if ((err = socket_recv(s, buffer, BUFFER_SIZE, &readbytes, SOCKET_RECV_NOFLAGS)) != NError_Success || readbytes <= 0) break;
+        if ((err = nsocket_recv(s, buffer, BUFFER_SIZE, &readbytes, NSOCKET_RECV_NOFLAGS)) != NError_Success || readbytes <= 0) break;
         for (size_t i = 0; i < readbytes; i++) putchar(buffer[i]);
     }
 
-    if ((err = socket_close(s)) != NError_Success) handlesockerror(err, "socket_close");
+    if ((err = nsocket_close(s)) != NError_Success) handlesockerror(err, "nsocket_close");
 }

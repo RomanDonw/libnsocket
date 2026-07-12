@@ -6,7 +6,7 @@
 
 #include "optfunc.h"
 
-NError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, const void *optval, size_t optsize)
+NError nsocket_setopt(const NSocket *socket, NSocketOptionLevel level, NSocketOptionName optname, const void *optval, size_t optsize)
 {
     ENSURE_INIT;
 
@@ -15,28 +15,28 @@ NError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOption
 
     switch (level)
     {
-        case SocketOptionLevel_Socket:
+        case NSocketOptionLevel_Socket:
             switch (optname)
             {
                 // readonly options.
-                case SocketOptionName_Socket_AcceptConnections:
-                case SocketOptionName_Socket_InternalError:
-                case SocketOptionName_Socket_Type:
+                case NSocketOptionName_Socket_AcceptConnections:
+                case NSocketOptionName_Socket_InternalError:
+                case NSocketOptionName_Socket_Type:
                     return NError_UnsupportedOperation;
 
-                case SocketOptionName_Socket_KeepAliveConnection:
-                case SocketOptionName_Socket_Broadcast:
+                case NSocketOptionName_Socket_KeepAliveConnection:
+                case NSocketOptionName_Socket_Broadcast:
                     goto handle_bool;
 
-                case SocketOptionName_Socket_RecvBufferSize:
-                case SocketOptionName_Socket_SendBufferSize:
+                case NSocketOptionName_Socket_RecvBufferSize:
+                case NSocketOptionName_Socket_SendBufferSize:
                     goto handle_onlyposint;
 
-                case SocketOptionName_Socket_Linger:
+                case NSocketOptionName_Socket_Linger:
                 {
-                    if (optsize < sizeof(SocketLingerOptions)) return NError_IncorrectArgumentValue;
+                    if (optsize < sizeof(NSocketLingerOptions)) return NError_IncorrectArgumentValue;
 
-                    const SocketLingerOptions *lingopts = optval;
+                    const NSocketLingerOptions *lingopts = optval;
 
                     struct linger ling;
                     ling.l_onoff = lingopts->enable;
@@ -45,12 +45,12 @@ NError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOption
                     return NError_Success;
                 }
 
-                case SocketOptionName_Socket_RecvTimeout:;
-                case SocketOptionName_Socket_SendTimeout:;
+                case NSocketOptionName_Socket_RecvTimeout:;
+                case NSocketOptionName_Socket_SendTimeout:;
                 {
                     if (optsize < sizeof(uint32_t)) return NError_IncorrectArgumentValue;
 
-                    #ifdef LIBSOCKET_OS_WINDOWS
+                    #ifdef LIBNSOCKET_OS_WINDOWS
                         const void *data = optval;
                         const socklen_t size = sizeof(uint32_t);
                     #else
@@ -73,18 +73,18 @@ NError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOption
             }
             break;
 
-        case SocketOptionLevel_TCP:
+        case NSocketOptionLevel_TCP:
             switch (optname)
             {
-                case SocketOptionName_TCP_NoDelay:
-                case SocketOptionName_TCP_FastOpen:
+                case NSocketOptionName_TCP_NoDelay:
+                case NSocketOptionName_TCP_FastOpen:
                     goto handle_bool;
 
-                case SocketOptionName_TCP_ConnectionKeepIdleTime:
+                case NSocketOptionName_TCP_ConnectionKeepIdleTime:
                     goto handle_posorzeroint;
 
-                case SocketOptionName_TCP_KeepAliveProbesInterval:
-                case SocketOptionName_TCP_MaxKeepAliveProbes:
+                case NSocketOptionName_TCP_KeepAliveProbesInterval:
+                case NSocketOptionName_TCP_MaxKeepAliveProbes:
                     goto handle_onlyposint;
 
                 default:
@@ -92,10 +92,10 @@ NError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOption
             }
             break;
 
-        case SocketOptionLevel_IP:
+        case NSocketOptionLevel_IP:
             switch (optname)
             {
-                case SocketOptionName_IP_TimeToLive:
+                case NSocketOptionName_IP_TimeToLive:
                     goto handle_uint8;
 
                 default:
@@ -112,7 +112,7 @@ NError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOption
     // =============================================================================
 
     {
-        #ifdef LIBSOCKET_OS_WINDOWS
+        #ifdef LIBNSOCKET_OS_WINDOWS
             DWORD val_dwint;
         #else
             int val_dwint;
@@ -122,7 +122,7 @@ NError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOption
 
         handle_bool:
             if (optsize < sizeof(bool)) return NError_IncorrectArgumentValue;
-            #ifdef LIBSOCKET_OS_WINDOWS
+            #ifdef LIBNSOCKET_OS_WINDOWS
                 val_dwint = (*(bool *)optval) ? TRUE : FALSE;
             #else
                 val_dwint = (*(bool *)optval) ? true : false;
@@ -131,7 +131,7 @@ NError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOption
 
         handle_posorzeroint:
             if (optsize < sizeof(int) || *(int *)optval < 0) return NError_IncorrectArgumentValue;
-            #ifdef LIBSOCKET_OS_WINDOWS
+            #ifdef LIBNSOCKET_OS_WINDOWS
                 val_dwint = *(int *)optval;
                 goto load_dwint;
             #else
@@ -140,7 +140,7 @@ NError socket_setopt(const Socket *socket, SocketOptionLevel level, SocketOption
 
         handle_onlyposint:
             if (optsize < sizeof(int) || *(int *)optval <= 0) return NError_IncorrectArgumentValue;
-            #ifdef LIBSOCKET_OS_WINDOWS
+            #ifdef LIBNSOCKET_OS_WINDOWS
                 val_dwint = *(int *)optval;
                 goto load_dwint;
             #else

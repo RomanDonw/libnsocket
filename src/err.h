@@ -7,9 +7,9 @@
 #ifndef ERR_H
 #define ERR_H
 
-#include "libsocket.h"
+#include "libnsocket.h"
 
-#ifdef LIBSOCKET_OS_WINDOWS
+#ifdef LIBNSOCKET_OS_WINDOWS
     #define GETLASTERROR() (WSAGetLastError())
 
     #define SOCKERR_INTR WSAEINTR
@@ -97,8 +97,8 @@
     #define SOCKERR_ISCONN EISCONN
 #endif
 
-NError __libsocket_translateerror(int err);
-#define translateerror(...) (__libsocket_translateerror(__VA_ARGS__))
+NError __libnsocket_translateerror(int err);
+#define translateerror(...) (__libnsocket_translateerror(__VA_ARGS__))
 
 #define GETLASTTRANSLATEDSYSERR() (translateerror(GETLASTERROR()))
 

@@ -4,7 +4,7 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-#include "libsocket.h"
+#include "libnsocket.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 #include "util.h"
 #include "types.h"
 
-#ifndef LIBSOCKET_OS_WINDOWS
+#ifndef LIBNSOCKET_OS_WINDOWS
     #include <unistd.h>
     #include <arpa/inet.h>
     #include <sys/time.h>
@@ -23,26 +23,26 @@
     #include <fcntl.h>
 #endif
 
-#ifdef LIBSOCKET_OS_WINDOWS
+#ifdef LIBNSOCKET_OS_WINDOWS
     static const DWORD sockoptval_bool_true = TRUE;
 #else
     static const int sockoptval_bool_true = true;
 #endif
 
-NError socket_open(Socket **socket_, SocketAddressFamily af, SocketType type, SocketProtocol protocol)
+NError nsocket_open(NSocket **socket_, NSocketAddressFamily af, NSocketType type, NSocketProtocol protocol)
 {
     ENSURE_INIT;
     NError nerr;
 
     // =============================================================================
     
-    if (af != SocketAddressFamily_IPv4 && af != SocketAddressFamily_IPv6)
+    if (af != NSocketAddressFamily_IPv4 && af != NSocketAddressFamily_IPv6)
     { nerr = NError_UnsupportedAddressFamily; goto errorquit_generic; }
 
-    if (type != SocketType_Stream && type != SocketType_Datagram)
+    if (type != NSocketType_Stream && type != NSocketType_Datagram)
     { nerr = NError_UnsupportedSocketType; goto errorquit_generic; }
 
-    if (protocol != SocketProtocol_Unspecified && protocol != SocketProtocol_TCP && protocol != SocketProtocol_UDP)
+    if (protocol != NSocketProtocol_Unspecified && protocol != NSocketProtocol_TCP && protocol != NSocketProtocol_UDP)
     { nerr = NError_UnsupportedProtocol; goto errorquit_generic; }
 
     // =============================================================================
@@ -50,7 +50,7 @@ NError socket_open(Socket **socket_, SocketAddressFamily af, SocketType type, So
     SOCKETDESCRIPTOR desc = socket(af, type, protocol);
     if (desc == INVALID_SOCKET) { nerr = GETLASTTRANSLATEDSYSERR(); goto errorquit_generic; }
 
-    #ifdef LIBSOCKET_OS_WINDOWS
+    #ifdef LIBNSOCKET_OS_WINDOWS
         if (setsockopt(desc, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, &sockoptval_bool_true, sizeof(sockoptval_bool_true)))
         { nerr = GETLASTTRANSLATEDSYSERR(); goto errorquit_afteropendesc; }
     #else
@@ -58,7 +58,7 @@ NError socket_open(Socket **socket_, SocketAddressFamily af, SocketType type, So
         { nerr = GETLASTTRANSLATEDSYSERR(); goto errorquit_afteropendesc; }
     #endif
 
-    Socket *ret = allocs.malloc(sizeof(Socket));
+    NSocket *ret = allocs.malloc(sizeof(NSocket));
     if (!ret) { nerr = NError_MemoryAllocationFailed; goto errorquit_afteropendesc; }
     ret->af = af;
     ret->type = type;
@@ -67,7 +67,7 @@ NError socket_open(Socket **socket_, SocketAddressFamily af, SocketType type, So
 
     if ((nerr = nthread_mutex_create(&ret->mutex_nonblocking)) != NError_Success) goto errorquit_afteralloc;
 
-    if (((nerr = socket_setnonblocking(ret, false)) != NError_Success) || ((nerr = nthread_mutex_lock(sockslistmutex)) != NError_Success))
+    if (((nerr = nsocket_setnonblocking(ret, false)) != NError_Success) || ((nerr = nthread_mutex_lock(sockslistmutex)) != NError_Success))
     { goto errorquit_aftermutexcreate; }
 
     if ((nerr = n_unorderedset_addelement(sockslist, &ret)) != NError_Success) goto errorquit_afterlocksockslistmtx;
@@ -94,7 +94,7 @@ NError socket_open(Socket **socket_, SocketAddressFamily af, SocketType type, So
     return nerr;
 }
 
-NError socket_close(Socket *socket)
+NError nsocket_close(NSocket *socket)
 {
     ENSURE_INIT;
 
@@ -116,28 +116,28 @@ NError socket_close(Socket *socket)
     return nerr;
 }
 
-NError socket_listen(const Socket *socket, int backlog)
+NError nsocket_listen(const NSocket *socket, int backlog)
 {
     ENSURE_INIT;
     if (listen(socket->desc, backlog)) return GETLASTTRANSLATEDSYSERR();
     return NError_Success;
 }
 
-NError socket_connect(const Socket *socket, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen)
+NError nsocket_connect(const NSocket *socket, const NSocketAddressInterface *sockaddr, socklen_t sockaddrlen)
 {
     ENSURE_INIT;
     if (connect(socket->desc, (struct sockaddr *)sockaddr, sockaddrlen)) return GETLASTTRANSLATEDSYSERR();
     return NError_Success;
 }
 
-NError socket_bind(const Socket *socket, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen)
+NError nsocket_bind(const NSocket *socket, const NSocketAddressInterface *sockaddr, socklen_t sockaddrlen)
 {
     ENSURE_INIT;
     if (bind(socket->desc, (struct sockaddr *)sockaddr, sockaddrlen)) return GETLASTTRANSLATEDSYSERR();
     return NError_Success;
 }
 
-NError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *sockaddrlen)
+NError nsocket_accept(NSocket **acceptedsocket, const NSocket *socket, NSocketAddressInterface *sockaddr, socklen_t *sockaddrlen)
 {
     ENSURE_INIT;
     NError nerr;
@@ -145,7 +145,7 @@ NError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketAddres
     SOCKETDESCRIPTOR desc = accept(socket->desc, sockaddr, sockaddrlen);
     if (desc == INVALID_SOCKET) { nerr = GETLASTTRANSLATEDSYSERR(); goto errorquit_generic; }
 
-    #ifdef LIBSOCKET_OS_WINDOWS
+    #ifdef LIBNSOCKET_OS_WINDOWS
         if (setsockopt(desc, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, &sockoptval_bool_true, sizeof(sockoptval_bool_true)))
         { nerr = GETLASTTRANSLATEDSYSERR(); goto errorquit_afteropendesc; }
     #else
@@ -153,7 +153,7 @@ NError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketAddres
         { nerr = GETLASTTRANSLATEDSYSERR(); goto errorquit_afteropendesc; }
     #endif
 
-    Socket *ret = allocs.malloc(sizeof(Socket));
+    NSocket *ret = allocs.malloc(sizeof(NSocket));
     if (!ret) { nerr = NError_MemoryAllocationFailed; goto errorquit_afteropendesc; }
     ret->af = socket->af;
     ret->type = socket->type;
@@ -162,7 +162,7 @@ NError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketAddres
 
     if ((nerr = nthread_mutex_create(&ret->mutex_nonblocking)) != NError_Success) goto errorquit_afteralloc;
 
-    if (((nerr = socket_setnonblocking(ret, false)) != NError_Success) || ((nerr = nthread_mutex_lock(sockslistmutex)) != NError_Success))
+    if (((nerr = nsocket_setnonblocking(ret, false)) != NError_Success) || ((nerr = nthread_mutex_lock(sockslistmutex)) != NError_Success))
     { goto errorquit_aftermutexcreate; }
 
     if ((nerr = n_unorderedset_addelement(sockslist, &ret)) != NError_Success) goto errorquit_afterlocksockslistmtx;
@@ -196,27 +196,27 @@ NError socket_accept(Socket **acceptedsocket, const Socket *socket, SocketAddres
     if (processedbytes) *processedbytes = procbytes;\
     return NError_Success;
 
-NError socket_recv(const Socket *socket, void *buffer, size_t len, size_t *processedbytes, int flags)
+NError nsocket_recv(const NSocket *socket, void *buffer, size_t len, size_t *processedbytes, int flags)
 { SOCKIOFUNCPROTO(recv(socket->desc, buffer, CLAMPSIZET(len), flags)) }
 
-NError socket_recvfrom(const Socket *socket, void *buffer, size_t len, size_t *processedbytes, int flags, SocketAddressInterface *sockaddr, socklen_t *sockaddrlen)
+NError nsocket_recvfrom(const NSocket *socket, void *buffer, size_t len, size_t *processedbytes, int flags, NSocketAddressInterface *sockaddr, socklen_t *sockaddrlen)
 { SOCKIOFUNCPROTO(recvfrom(socket->desc, buffer, CLAMPSIZET(len), flags, (struct sockaddr *)sockaddr, sockaddrlen)) }
 
-NError socket_send(const Socket *socket, const void *data, size_t len, size_t *processedbytes, int flags)
+NError nsocket_send(const NSocket *socket, const void *data, size_t len, size_t *processedbytes, int flags)
 { SOCKIOFUNCPROTO(send(socket->desc, data, CLAMPSIZET(len), flags)) }
 
-NError socket_sendto(const Socket *socket, const void *buffer, size_t len, size_t *processedbytes, int flags, const SocketAddressInterface *sockaddr, socklen_t sockaddrlen)
+NError nsocket_sendto(const NSocket *socket, const void *buffer, size_t len, size_t *processedbytes, int flags, const NSocketAddressInterface *sockaddr, socklen_t sockaddrlen)
 { SOCKIOFUNCPROTO(sendto(socket->desc, buffer, CLAMPSIZET(len), flags, (const struct sockaddr *)sockaddr, sockaddrlen)) }
 
 #undef SOCKIOFUNCPROTO
 
-#ifdef LIBSOCKET_OS_WINDOWS
+#ifdef LIBNSOCKET_OS_WINDOWS
     #define IOCTLSOCKET(desc, option, value_ptr) (ioctlsocket(desc, option, value_ptr))
 #else
     #define IOCTLSOCKET(desc, option, value_ptr) (ioctl(desc, option, value_ptr))
 #endif
 
-bool socket_isnonblocking(const Socket *socket)
+bool nsocket_isnonblocking(const NSocket *socket)
 {
     SAFE_MUTEX_LOCK(socket->mutex_nonblocking);
     bool ret = socket->nonblocking;
@@ -224,14 +224,14 @@ bool socket_isnonblocking(const Socket *socket)
     return ret;
 }
 
-NError socket_setnonblocking(Socket *socket, bool enable)
+NError nsocket_setnonblocking(NSocket *socket, bool enable)
 {
     ENSURE_INIT;
 
     NError nerr = nthread_mutex_lock(socket->mutex_nonblocking);
     if (nerr != NError_Success) return nerr;
 
-    #ifdef LIBSOCKET_OS_WINDOWS
+    #ifdef LIBNSOCKET_OS_WINDOWS
         unsigned long val = enable;
         if (IOCTLSOCKET(socket->desc, FIONBIO, &val)) goto errorquit;
     #else
@@ -253,11 +253,11 @@ NError socket_setnonblocking(Socket *socket, bool enable)
     return GETLASTTRANSLATEDSYSERR();
 }
 
-NError socket_getreadablebytes(const Socket *socket, size_t *availbytes)
+NError nsocket_getreadablebytes(const NSocket *socket, size_t *availbytes)
 {
     ENSURE_INIT;
 
-    #ifdef LIBSOCKET_OS_WINDOWS
+    #ifdef LIBNSOCKET_OS_WINDOWS
         unsigned long val;
     #else
         int val;
@@ -268,13 +268,13 @@ NError socket_getreadablebytes(const Socket *socket, size_t *availbytes)
     return NError_Success;
 }
 
-#ifdef LIBSOCKET_OS_WINDOWS
+#ifdef LIBNSOCKET_OS_WINDOWS
     #define SHUT_RD SD_RECEIVE
     #define SHUT_WR SD_SEND
     #define SHUT_RDWR SD_BOTH
 #endif
 
-NError socket_shutdown(const Socket *socket, SocketShutdownFlags flags)
+NError nsocket_shutdown(const NSocket *socket, NSocketShutdownFlags flags)
 {
     ENSURE_INIT;
 
@@ -299,22 +299,22 @@ NError socket_shutdown(const Socket *socket, SocketShutdownFlags flags)
     return NError_Success;
 }
 
-SocketAddressFamily socket_getaf(const Socket *socket) { return socket->af; }
-SocketType socket_gettype(const Socket *socket) { return socket->type; }
-SocketProtocol socket_getprotocol(const Socket *socket) { return socket->protocol; }
+NSocketAddressFamily nsocket_getaf(const NSocket *socket) { return socket->af; }
+NSocketType nsocket_gettype(const NSocket *socket) { return socket->type; }
+NSocketProtocol nsocket_getprotocol(const NSocket *socket) { return socket->protocol; }
 
-NError socket_getpeername(const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *size)
+NError nsocket_getpeername(const NSocket *socket, NSocketAddressInterface *sockaddr, socklen_t *size)
 {
     ENSURE_INIT;
     if (getpeername(socket->desc, (struct sockaddr *)sockaddr, size)) return GETLASTTRANSLATEDSYSERR();
     return NError_Success;
 }
 
-NError socket_getsockname(const Socket *socket, SocketAddressInterface *sockaddr, socklen_t *size)
+NError nsocket_getsockname(const NSocket *socket, NSocketAddressInterface *sockaddr, socklen_t *size)
 {
     ENSURE_INIT;
     if (getsockname(socket->desc, (struct sockaddr *)sockaddr, size)) return GETLASTTRANSLATEDSYSERR();
     return NError_Success;
 }
 
-SOCKETDESCRIPTOR socket_gethandle(const Socket *socket) { return socket->desc; }
+SOCKETDESCRIPTOR nsocket_gethandle(const NSocket *socket) { return socket->desc; }

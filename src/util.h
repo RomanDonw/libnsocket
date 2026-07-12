@@ -7,13 +7,13 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "libsocket.h"
+#include "libnsocket.h"
 
 #include <limits.h>
 #include <stddef.h>
 #include <libnthread.h>
 
-#ifdef LIBSOCKET_OS_WINDOWS
+#ifdef LIBNSOCKET_OS_WINDOWS
     #define CLAMPSIZET(x) ((size_t)x > INT_MAX ? (int)INT_MAX : (int)x)
     #define CLOSESOCKETDESC(descr) (closesocket(descr))
 
@@ -25,50 +25,50 @@
     #define CLOSESOCKETDESC(descr) (close(descr))
 #endif
 
-extern NMemoryAllocators __libsocket_allocators;
-#define allocs (__libsocket_allocators)
+extern NMemoryAllocators __libnsocket_allocators;
+#define allocs (__libnsocket_allocators)
 
-extern NUnorderedSet *__libsocket_sockslist;
-#define sockslist (__libsocket_sockslist)
+extern NUnorderedSet *__libnsocket_sockslist;
+#define sockslist (__libnsocket_sockslist)
 
-extern NThreadMutex *__libsocket_sockslistmutex;
-#define sockslistmutex (__libsocket_sockslistmutex)
+extern NThreadMutex *__libnsocket_sockslistmutex;
+#define sockslistmutex (__libnsocket_sockslistmutex)
 
 // =============================================================================
 
-extern NPanicHandler *__libsocket_panichandler;
-#define __panichandler (__libsocket_panichandler)
+extern NPanicHandler *__libnsocket_panichandler;
+#define __panichandler (__libnsocket_panichandler)
 
-NPanicHandler __libsocket_defaultpanichandler;
-#define __defaultpanichandler (__libsocket_defaultpanichandler)
+NPanicHandler __libnsocket_defaultpanichandler;
+#define __defaultpanichandler (__libnsocket_defaultpanichandler)
 
 
 #define PANIC_NOERRORCODE (NError_Success)
 
 #define panic_general(errorcode, description) \
     {\
-        __panichandler(LIBSOCKET_MODULENAME, __FILE__, __LINE__, __func__, (description), (errorcode));\
+        __panichandler(LIBNSOCKET_MODULENAME, __FILE__, __LINE__, __func__, (description), (errorcode));\
         abort();\
     }
 
 // =============================================================================
 
-extern NAlertHandler *__libsocket_alerthandler;
-#define __alerthandler (__libsocket_alerthandler)
+extern NAlertHandler *__libnsocket_alerthandler;
+#define __alerthandler (__libnsocket_alerthandler)
 
-NAlertHandler __libsocket_defaultalerthandler;
-#define __defaultalerthandler (__libsocket_defaultalerthandler)
+NAlertHandler __libnsocket_defaultalerthandler;
+#define __defaultalerthandler (__libnsocket_defaultalerthandler)
 
-#ifdef LIBSOCKET_DEBUG
-    #define alert(format, ...) (__alerthandler(LIBSOCKET_MODULENAME, __FILE__, __LINE__, __func__, format, __VA_ARGS__))
+#ifdef LIBNSOCKET_DEBUG
+    #define alert(format, ...) (__alerthandler(LIBNSOCKET_MODULENAME, __FILE__, __LINE__, __func__, format, __VA_ARGS__))
 #else
     #define alert(format, ...)
 #endif
 
 // =============================================================================
 
-NError __libsocket_closesocket(Socket *socket);
-#define __closesocket (__libsocket_closesocket)
+NError __libnsocket_closesocket(NSocket *socket);
+#define __closesocket (__libnsocket_closesocket)
 
 #define SAFE_MUTEX_LOCK(mutex) \
     { NError nerr = nthread_mutex_lock(mutex); if (nerr != NError_Success) panic_general(nerr, n_panicmsg_mutexlock); }

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 # ========== SETTINGS ==========
-project(socket VERSION 0.0 LANGUAGES C)
+project(nsocket VERSION 0.0 LANGUAGES C)
 
 set(VERSION_CHECK_METHOD SameMajorVersion)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -28,9 +28,9 @@ add_library(${PROJECT_NAME} ${SOURCES})
 unset(SOURCES)
 
 target_compile_definitions(${PROJECT_NAME}
-    PRIVATE $<$<BOOL:${DEBUG}>:LIBSOCKET_DEBUG>
-    PRIVATE $<$<BOOL:${BUILD_SHARED_LIBS}>:LIBSOCKET_EXPORT>
-    PUBLIC $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:LIBSOCKET_STATIC>
+    PRIVATE $<$<BOOL:${DEBUG}>:LIBNSOCKET_DEBUG>
+    PRIVATE $<$<BOOL:${BUILD_SHARED_LIBS}>:LIBNSOCKET_EXPORT>
+    PUBLIC $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:LIBNSOCKET_STATIC>
 )
 
 # setup includes & required libs
@@ -50,7 +50,7 @@ endif()
 # setup correct installation process
 
 install(TARGETS ${PROJECT_NAME}
-    EXPORT libsocketTargets
+    EXPORT libnsocketTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -60,10 +60,10 @@ install(DIRECTORY "include/" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 include("${CMAKE_SOURCE_DIR}/cmake/configure.cmake")
 
-install(EXPORT libsocketTargets
-    FILE libsocketTargets.cmake
-    NAMESPACE libsocket::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libsocket
+install(EXPORT libnsocketTargets
+    FILE libnsocketTargets.cmake
+    NAMESPACE libnsocket::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libnsocket
 )
 
 # ===== TESTS =====

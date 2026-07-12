@@ -4,39 +4,39 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-#include "libsocket.h"
+#include "libnsocket.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef LIBSOCKET_OS_WINDOWS
+#ifndef LIBNSOCKET_OS_WINDOWS
     #include <unistd.h>
     #include <arpa/inet.h>
 #endif
 
 #include "err.h"
 
-NError socket_packsockipaddr(SocketIPAddressInterface *sockaddr, SocketAddressFamily af, const IPAddressInterface *addr, unsigned short port)
+NError nsocket_packsockipaddr(NSocketIPAddressInterface *sockaddr, NSocketAddressFamily af, const IPAddressInterface *addr, unsigned short port)
 {
     switch (af)
     {
-        case SocketAddressFamily_IPv4:;
-            SocketIPv4Address *sa4 = sockaddr;
-            memset(sa4, 0, sizeof(SocketIPv4Address));
+        case NSocketAddressFamily_IPv4:;
+            NSocketIPv4Address *sa4 = sockaddr;
+            memset(sa4, 0, sizeof(NSocketIPv4Address));
 
-            sa4->sin_family = SocketAddressFamily_IPv4;
+            sa4->sin_family = NSocketAddressFamily_IPv4;
             sa4->sin_addr = *((IPv4Address *)addr);
-            sa4->sin_port = SOCKET_HTONS(port);
+            sa4->sin_port = NSOCKET_HTONS(port);
 
             break;
 
-        case SocketAddressFamily_IPv6:;
-            SocketIPv6Address *sa6 = sockaddr;
-            memset(sa6, 0, sizeof(SocketIPv6Address));
+        case NSocketAddressFamily_IPv6:;
+            NSocketIPv6Address *sa6 = sockaddr;
+            memset(sa6, 0, sizeof(NSocketIPv6Address));
 
-            sa6->sin6_family = SocketAddressFamily_IPv6;
+            sa6->sin6_family = NSocketAddressFamily_IPv6;
             sa6->sin6_addr = *((IPv6Address *)addr);
-            sa6->sin6_port = SOCKET_HTONS(port);
+            sa6->sin6_port = NSOCKET_HTONS(port);
 
             break;
 
@@ -47,22 +47,22 @@ NError socket_packsockipaddr(SocketIPAddressInterface *sockaddr, SocketAddressFa
     return NError_Success;
 }
 
-NError socket_unpacksockipaddr(const SocketIPAddressInterface *sockaddr, SocketAddressFamily af, IPAddressInterface *addr, unsigned short *port)
+NError nsocket_unpacksockipaddr(const NSocketIPAddressInterface *sockaddr, NSocketAddressFamily af, IPAddressInterface *addr, unsigned short *port)
 {
-    if (SOCKET_GETSOCKADDRAF(sockaddr) != af) return NError_IncorrectArgumentValue;
+    if (NSOCKET_GETSOCKADDRAF(sockaddr) != af) return NError_IncorrectArgumentValue;
 
     switch (af)
     {
-        case SocketAddressFamily_IPv4:;
-            const SocketIPv4Address *sa4 = sockaddr;
+        case NSocketAddressFamily_IPv4:;
+            const NSocketIPv4Address *sa4 = sockaddr;
             *((IPv4Address *)addr) = sa4->sin_addr;
-            *port = SOCKET_NTOHS(sa4->sin_port);
+            *port = NSOCKET_NTOHS(sa4->sin_port);
             break;
 
-        case SocketAddressFamily_IPv6:;
-            const SocketIPv6Address *sa6 = sockaddr;
+        case NSocketAddressFamily_IPv6:;
+            const NSocketIPv6Address *sa6 = sockaddr;
             *((IPv6Address *)addr) = sa6->sin6_addr;
-            *port = SOCKET_NTOHS(sa6->sin6_port);
+            *port = NSOCKET_NTOHS(sa6->sin6_port);
             break;
 
         default:

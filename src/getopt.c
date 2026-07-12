@@ -11,7 +11,7 @@
 static inline NError __getsockopt(SOCKETDESCRIPTOR desc, int level, int optname, void *optval, socklen_t optlen);
 static void __filloutopt(const void *value, size_t size, void *optval, size_t *optlen);
 
-NError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOptionName optname, void *optval, size_t *optsize)
+NError nsocket_getopt(const NSocket *socket, NSocketOptionLevel level, NSocketOptionName optname, void *optval, size_t *optsize)
 {
     ENSURE_INIT;
 
@@ -21,21 +21,21 @@ NError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOption
 
     switch (level)
     {
-        case SocketOptionLevel_Socket:
+        case NSocketOptionLevel_Socket:
             switch (optname)
             {
-                case SocketOptionName_Socket_KeepAliveConnection:
-                case SocketOptionName_Socket_Broadcast:
-                case SocketOptionName_Socket_AcceptConnections:
+                case NSocketOptionName_Socket_KeepAliveConnection:
+                case NSocketOptionName_Socket_Broadcast:
+                case NSocketOptionName_Socket_AcceptConnections:
                     goto handlebool;
 
-                case SocketOptionName_Socket_RecvBufferSize:
-                case SocketOptionName_Socket_SendBufferSize:
-                case SocketOptionName_Socket_InternalError:
-                case SocketOptionName_Socket_Type:
+                case NSocketOptionName_Socket_RecvBufferSize:
+                case NSocketOptionName_Socket_SendBufferSize:
+                case NSocketOptionName_Socket_InternalError:
+                case NSocketOptionName_Socket_Type:
                     goto handleint;
 
-                case SocketOptionName_Socket_Linger:
+                case NSocketOptionName_Socket_Linger:
                 {
                     struct linger ling;
                     if ((err = __getsockopt(socket->desc, level, optname, &ling, sizeof(ling))) != NError_Success) return err;
@@ -44,11 +44,11 @@ NError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOption
                         on Linux (by POSIX standard) 'l_linger' field has 'int' type, but in WinSock it has 'unsigned short' type,
                             so we need to cast types with limits checking when we`re not on Windows.
                     */
-                    #ifndef LIBSOCKET_OS_WINDOWS
+                    #ifndef LIBNSOCKET_OS_WINDOWS
                         if (ling.l_linger > USHRT_MAX || ling.l_linger < 0) goto varoverflowerr;
                     #endif
 
-                    SocketLingerOptions lingopts;
+                    NSocketLingerOptions lingopts;
                     lingopts.enable = ling.l_onoff;
                     lingopts.linger = ling.l_linger;
 
@@ -56,11 +56,11 @@ NError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOption
                     return NError_Success;
                 }
 
-                case SocketOptionName_Socket_RecvTimeout:
-                case SocketOptionName_Socket_SendTimeout:
+                case NSocketOptionName_Socket_RecvTimeout:
+                case NSocketOptionName_Socket_SendTimeout:
                 {
                     uint32_t millis;
-                    #ifdef LIBSOCKET_OS_WINDOWS
+                    #ifdef LIBNSOCKET_OS_WINDOWS
                         if ((err = __getsockopt(socket->desc, level, optname, &millis, sizeof(millis))) != NError_Success) return err;
                     #else
                         struct timeval tv;
@@ -92,16 +92,16 @@ NError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOption
             }
             break;
 
-        case SocketOptionLevel_TCP:
+        case NSocketOptionLevel_TCP:
             switch (optname)
             {
-                case SocketOptionName_TCP_NoDelay:
-                case SocketOptionName_TCP_FastOpen:
+                case NSocketOptionName_TCP_NoDelay:
+                case NSocketOptionName_TCP_FastOpen:
                     goto handlebool;
 
-                case SocketOptionName_TCP_MaxKeepAliveProbes:
-                case SocketOptionName_TCP_KeepAliveProbesInterval:
-                case SocketOptionName_TCP_ConnectionKeepIdleTime:
+                case NSocketOptionName_TCP_MaxKeepAliveProbes:
+                case NSocketOptionName_TCP_KeepAliveProbesInterval:
+                case NSocketOptionName_TCP_ConnectionKeepIdleTime:
                     goto handleint;
 
                 default:
@@ -109,11 +109,11 @@ NError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOption
             }
             break;
 
-        case SocketOptionLevel_IP:
+        case NSocketOptionLevel_IP:
             {
                 switch (optname)
                 {
-                    case SocketOptionName_IP_TimeToLive:
+                    case NSocketOptionName_IP_TimeToLive:
                         goto handleuint8;
 
                     default:
@@ -131,7 +131,7 @@ NError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOption
     // =============================================================================
 
     {
-        #ifdef LIBSOCKET_OS_WINDOWS
+        #ifdef LIBNSOCKET_OS_WINDOWS
             DWORD val_dwint;
         #else
             int val_dwint;
@@ -156,7 +156,7 @@ NError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOption
         handleint:
             if ((err = __getsockopt(socket->desc, level, optname, &val_dwint, sizeof(val_dwint))) != NError_Success) return err;
             
-            #ifdef LIBSOCKET_OS_WINDOWS
+            #ifdef LIBNSOCKET_OS_WINDOWS
                 if (val_dwint > INT_MAX) goto varoverflowerr;
             #endif
 
@@ -168,7 +168,7 @@ NError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOption
             if ((err = __getsockopt(socket->desc, level, optname, &val_dwint, sizeof(val_dwint))) != NError_Success) return err;
 
             if (val_dwint > UINT8_MAX) goto varoverflowerr;
-            #ifndef LIBSOCKET_OS_WINDOWS
+            #ifndef LIBNSOCKET_OS_WINDOWS
                 if (val_dwint < 0) goto varoverflowerr;
             #endif
             value.uint8 = val_dwint;
@@ -185,7 +185,7 @@ NError socket_getopt(const Socket *socket, SocketOptionLevel level, SocketOption
         // =============================================================================
         
         varoverflowerr:
-            alert("Got internal size overflow in socket_getopt with params: level=%i, optname=%i.", level, optname);
+            alert("Got internal size overflow in %s with params: level=%i, optname=%i.", __func__, level, optname);
         return NError_InternalVariableOverflow;
     }
 }

@@ -7,21 +7,21 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
-#include "libsocket.h"
+#include "libnsocket.h"
 
 #include <libnthread.h>
 
-#ifdef LIBSOCKET_OS_WINDOWS
+#ifdef LIBNSOCKET_OS_WINDOWS
     typedef SSIZE_T ssize_t;
 #endif
 
-struct Socket
+struct NSocket
 {
     SOCKETDESCRIPTOR desc;
 
-    SocketAddressFamily af;
-    SocketType type;
-    SocketProtocol protocol;
+    NSocketAddressFamily af;
+    NSocketType type;
+    NSocketProtocol protocol;
     
     bool nonblocking;
     NThreadMutex *mutex_nonblocking;

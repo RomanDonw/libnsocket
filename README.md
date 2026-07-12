@@ -67,21 +67,21 @@ Also just run `sudo make install`. Library will be installed to your system.
 
 ## Usage in project
 
-### Manual linking
+### Manual linking (GCC/MinGW options style)
 > [!WARNING]
 > Manual linking is not recommended library usage way. Please use CMake for correct linking with library.
 
-Include `<libsocket.h>` header where you need to use this library. That link your executable with library by adding flag to command line `-lsocket`. On Windows you already need to link you executable with WinSock2 library, so just add flag `-lws2_32` command line. If you use static version of this library, please specify definition `LIBSOCKET_STATIC` when you compile file, where included <ins>libsocket</ins> header.
+Include `<libnsocket.h>` header where you need to use this library. That link your executable with library by adding flag to command line `-lnsocket`. On Windows you already need to link you executable with WinSock2 library, so just add flag `-lws2_32` command line. If you use static version of this library, please specify definition `LIBNSOCKET_STATIC` when you compile file, where included <ins>libnsocket</ins> header.
 
 ### CMake
-If you using CMake in your project, add `libsocket` by same method or with using `find_package`:
+If you using CMake in your project, add `libnsocket` by same method or with using `find_package`:
 
 ```cmake
-find_package(libsocket REQUIRED)
-target_link_libraries(<target> PRIVATE libsocket::socket)
+find_package(libnsocket REQUIRED)
+target_link_libraries(<target> PRIVATE libnsocket::nsocket)
 ```
 
-This will fully automatily setup <ins>libsocket</ins> for your project. By default CMake will use static version of <ins>libsocket</ins>, so if you want to use dynamic version of this library, set `BUILD_SHARED_LIBS` flag in your CMake config command prompt to `ON`.
+This will fully automatily setup <ins>libnsocket</ins> for your project. By default CMake will use static version of <ins>libnsocket</ins>, so if you want to use dynamic version of this library, set `BUILD_SHARED_LIBS` flag in your CMake config command prompt to `ON`.
 
 <!-- ========================================================================================================================================================== -->
 

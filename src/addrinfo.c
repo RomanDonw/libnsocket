@@ -7,7 +7,7 @@
 #define _POSIX_C_SOURCE 200112L
 #define _GNU_SOURCE 
 
-#include "libsocket.h"
+#include "libnsocket.h"
 
 #include <string.h>
 #include <stddef.h>
@@ -18,7 +18,7 @@
 
 static NError translateeaierror(int err);
 
-NError socket_getaddrinfo(const char *nodename, const char *servicename, const SocketDNSRequest *request, SocketDNSResponse **response)
+NError nsocket_getaddrinfo(const char *nodename, const char *servicename, const NSocketDNSRequest *request, NSocketDNSResponse **response)
 {
     ENSURE_INIT;
     
@@ -29,13 +29,13 @@ NError socket_getaddrinfo(const char *nodename, const char *servicename, const S
         hints = &_hints;
 
         hints->ai_flags = 0;
-        if (request->flags & SOCKET_AI_FLAG_PASSIVE) hints->ai_flags |= AI_PASSIVE;
-        if (request->flags & SOCKET_AI_FLAG_CANONNAME) hints->ai_flags |= AI_CANONNAME;
-        if (request->flags & SOCKET_AI_FLAG_NUMERICHOST) hints->ai_flags |= AI_NUMERICHOST;
-        if (request->flags & SOCKET_AI_FLAG_NUMERICSERV) hints->ai_flags |= AI_NUMERICSERV;
-        if (request->flags & SOCKET_AI_FLAG_ADDRCONFIG) hints->ai_flags |= AI_ADDRCONFIG;
-        if (request->flags & SOCKET_AI_FLAG_IPV4MAPPED) hints->ai_flags |= AI_V4MAPPED;
-        if (request->flags & SOCKET_AI_FLAG_BOTHIPVERS) hints->ai_flags |= AI_ALL;
+        if (request->flags & NSOCKET_AI_FLAG_PASSIVE) hints->ai_flags |= AI_PASSIVE;
+        if (request->flags & NSOCKET_AI_FLAG_CANONNAME) hints->ai_flags |= AI_CANONNAME;
+        if (request->flags & NSOCKET_AI_FLAG_NUMERICHOST) hints->ai_flags |= AI_NUMERICHOST;
+        if (request->flags & NSOCKET_AI_FLAG_NUMERICSERV) hints->ai_flags |= AI_NUMERICSERV;
+        if (request->flags & NSOCKET_AI_FLAG_ADDRCONFIG) hints->ai_flags |= AI_ADDRCONFIG;
+        if (request->flags & NSOCKET_AI_FLAG_IPV4MAPPED) hints->ai_flags |= AI_V4MAPPED;
+        if (request->flags & NSOCKET_AI_FLAG_BOTHIPVERS) hints->ai_flags |= AI_ALL;
 
         hints->ai_family = request->af;
         hints->ai_socktype = request->type;
@@ -48,11 +48,11 @@ NError socket_getaddrinfo(const char *nodename, const char *servicename, const S
         if (err != NError_Success) return err;
     }
 
-    SocketDNSResponse *firstresp = NULL;
-    SocketDNSResponse *currresp = NULL;
+    NSocketDNSResponse *firstresp = NULL;
+    NSocketDNSResponse *currresp = NULL;
     for (struct addrinfo *currai = result; currai; currai = currai->ai_next)
     {
-        SocketDNSResponse *resp = allocs.malloc(sizeof(SocketDNSResponse));
+        NSocketDNSResponse *resp = allocs.malloc(sizeof(NSocketDNSResponse));
         if (!resp) goto allocfail_resp;
 
         // =============================================================================
@@ -64,13 +64,13 @@ NError socket_getaddrinfo(const char *nodename, const char *servicename, const S
         resp->sockaddrlen = currai->ai_addrlen;
 
         resp->flags = 0;
-        if (currai->ai_flags & AI_PASSIVE) resp->flags |= SOCKET_AI_FLAG_PASSIVE;
-        if (currai->ai_flags & AI_CANONNAME) resp->flags |= SOCKET_AI_FLAG_CANONNAME;
-        if (currai->ai_flags & AI_NUMERICHOST) resp->flags |= SOCKET_AI_FLAG_NUMERICHOST;
-        if (currai->ai_flags & AI_NUMERICSERV) resp->flags |= SOCKET_AI_FLAG_NUMERICSERV;
-        if (currai->ai_flags & AI_ADDRCONFIG) resp->flags |= SOCKET_AI_FLAG_ADDRCONFIG;
-        if (currai->ai_flags & AI_V4MAPPED) resp->flags |= SOCKET_AI_FLAG_IPV4MAPPED;
-        if (currai->ai_flags & AI_ALL) resp->flags |= SOCKET_AI_FLAG_BOTHIPVERS;
+        if (currai->ai_flags & AI_PASSIVE) resp->flags |= NSOCKET_AI_FLAG_PASSIVE;
+        if (currai->ai_flags & AI_CANONNAME) resp->flags |= NSOCKET_AI_FLAG_CANONNAME;
+        if (currai->ai_flags & AI_NUMERICHOST) resp->flags |= NSOCKET_AI_FLAG_NUMERICHOST;
+        if (currai->ai_flags & AI_NUMERICSERV) resp->flags |= NSOCKET_AI_FLAG_NUMERICSERV;
+        if (currai->ai_flags & AI_ADDRCONFIG) resp->flags |= NSOCKET_AI_FLAG_ADDRCONFIG;
+        if (currai->ai_flags & AI_V4MAPPED) resp->flags |= NSOCKET_AI_FLAG_IPV4MAPPED;
+        if (currai->ai_flags & AI_ALL) resp->flags |= NSOCKET_AI_FLAG_BOTHIPVERS;
 
         // =============================================================================
 
@@ -109,7 +109,7 @@ NError socket_getaddrinfo(const char *nodename, const char *servicename, const S
             allocs.free(resp);
         allocfail_resp:
             freeaddrinfo(result);
-            socket_freeaddrinfo(firstresp);
+            nsocket_freeaddrinfo(firstresp);
             return NError_MemoryAllocationFailed;
     }
 
@@ -118,11 +118,11 @@ NError socket_getaddrinfo(const char *nodename, const char *servicename, const S
     return NError_Success;
 }
 
-void socket_freeaddrinfo(SocketDNSResponse *response)
+void nsocket_freeaddrinfo(NSocketDNSResponse *response)
 {
-    for (SocketDNSResponse *resp = response; resp;)
+    for (NSocketDNSResponse *resp = response; resp;)
     {
-        SocketDNSResponse *_resp = resp;
+        NSocketDNSResponse *_resp = resp;
         resp = resp->next;
 
         allocs.free(_resp->canonname);
@@ -132,7 +132,7 @@ void socket_freeaddrinfo(SocketDNSResponse *response)
     }
 }
 
-NError socket_getnameinfo(const SocketIPAddressInterface *sockaddr, socklen_t sockaddrlen, char *hostname, size_t *hostnamesize, char *servicename, size_t *servicenamesize, SocketGetNameInfoFlags flags)
+NError nsocket_getnameinfo(const NSocketIPAddressInterface *sockaddr, socklen_t sockaddrlen, char *hostname, size_t *hostnamesize, char *servicename, size_t *servicenamesize, NSocketGetNameInfoFlags flags)
 {
     ENSURE_INIT;
     NError err;
@@ -140,11 +140,11 @@ NError socket_getnameinfo(const SocketIPAddressInterface *sockaddr, socklen_t so
     if (!hostnamesize && !servicenamesize) return NError_IncorrectArgumentValue;
 
     int intrflags = 0;
-    if (flags & SOCKET_NI_FLAG_NOFQDN) intrflags |= NI_NOFQDN;
-    if (flags & SOCKET_NI_FLAG_NUMERICHOST) intrflags |= NI_NUMERICHOST;
-    if (flags & SOCKET_NI_FLAG_NUMERICSERV) intrflags |= NI_NUMERICSERV;
-    if (flags & SOCKET_NI_FLAG_DGRAM) intrflags |= NI_DGRAM;
-    if (flags & SOCKET_NI_FLAG_NAMEREQD) intrflags |= NI_NAMEREQD;
+    if (flags & NSOCKET_NI_FLAG_NOFQDN) intrflags |= NI_NOFQDN;
+    if (flags & NSOCKET_NI_FLAG_NUMERICHOST) intrflags |= NI_NUMERICHOST;
+    if (flags & NSOCKET_NI_FLAG_NUMERICSERV) intrflags |= NI_NUMERICSERV;
+    if (flags & NSOCKET_NI_FLAG_DGRAM) intrflags |= NI_DGRAM;
+    if (flags & NSOCKET_NI_FLAG_NAMEREQD) intrflags |= NI_NAMEREQD;
 
     char host[NI_MAXHOST];
     char serv[NI_MAXSERV];
