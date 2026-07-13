@@ -74,7 +74,7 @@ Also just run `sudo make install`. Library will be installed to your system.
 Include `<libnsocket.h>` header where you need to use this library. That link your executable with library by adding flag to command line `-lnsocket`. On Windows you already need to link you executable with WinSock2 library, so just add flag `-lws2_32` command line. If you use static version of this library, please specify definition `LIBNSOCKET_STATIC` when you compile file, where included <ins>libnsocket</ins> header. Also you need to link with required dependencies.
 
 ### CMake
-If you using CMake in your project, add `libnsocket` by same method or with using `find_package`:
+If you using CMake in your project, add `libnsocket` by using `find_package`:
 
 ```cmake
 find_package(libnsocket REQUIRED)
