@@ -8,6 +8,10 @@
 
 #include "util.h"
 
+#ifdef _MSC_VER
+    #pragma warning(disable : 4244)
+#endif
+
 static inline NError __getsockopt(NSOCKET_NATIVEDESCRIPTOR desc, int level, int optname, void *optval, socklen_t optlen);
 static void __filloutopt(const void *value, size_t size, void *optval, size_t *optlen);
 
